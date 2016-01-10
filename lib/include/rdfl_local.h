@@ -1,0 +1,14 @@
+#ifndef			__RDFL_LOCAL_H_
+# define		__RDFL_LOCAL_H_
+
+# include		"rdfl.h"
+
+# define		RDFL_DEFAULT_BUFFSIZE	4096 // (bytes)
+# define		RDFL_DEFAULT_TIMEOUT	0 // (non-blocking reads)
+
+typedef			enum {
+  RDFL_LOC_NONE		=	RDFL_LAST,
+  RDFL_LOC_OPEN		=	RDFL_LOC_NONE << 1,
+}			e_rdflsettings_local;
+
+#endif			/* !__RDFL_LOCAL_H_ */
