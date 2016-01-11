@@ -35,6 +35,8 @@ rdfl_clean(t_rdfl *obj) {
   if (RDFL_OPT_ISSET(obj->settings, RDFL_LOC_OPEN))
     close(obj->fd);
   // TODO clean buffer;
+  if (RDFL_OPT_ISSET(dest->settings, RDFL_LOC_ALLOC))
+    free(obj);
 }
 
 // Constructors
@@ -114,14 +116,23 @@ handler_typedef_declare(void *ptr) {
 
 // Opt setters
 //
-void rdfl_init(t_rdfl *dest) {
+void	rdfl_init(t_rdfl *dest) {
   if (!dest) return ;
   static t_rdfl_values		v = {
     .timeout = RDFL_DEFAULT_TIMEOUT,
     .buffsize = RDFL_DEFAULT_BUFFSIZE,
   };
   memcpy(&(dest->v), &v, sizeof(dest->v));
+  dest->settings = RDFL_NONE;
 }
+t_rdfl	*rdfl_init_new(void) {
+  t_rdfl	*new = malloc(sizeof(*new));
+  if (!new) return (NULL);
+  rdfl_init(new);
+  RDFL_OPT_SET(dest->settings, RDFL_LOC_ALLOC);
+  return (new);
+}
+
 void rdfl_set_timeout(t_rdfl *r, ssize_t timeout)
 { r->v.timeout = (timeout < -1 ? RDFL_DEFAULT_TIMEOUT : timeout); }
 void rdfl_set_buffsize(t_rdfl *r, size_t buffsize)
