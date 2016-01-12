@@ -5,9 +5,25 @@
 
 // Destructors
 //
+static
+void
+clean_reader(t_rdfl_reader *r) {
+  t_rdfl_buffer		*tmp;
+  while (r) {
+    tmp = r;
+    r = r->next;
+    free(tmp);
+  }
+}
+
 void
 rdfl_buffer_clean(t_rdfl_buffer *b) {
-  (void)b;
+  if (!b) return ;
+  while (b->first) // HERE
+  if (b->consummer) {
+    clean_reader(b->consummer);
+    free(b->consummer);
+  }
 }
 
 // Constructors
@@ -22,19 +38,22 @@ _add_new(void **oldptr, size_t s) {
 
 int
 rdfl_b_create(t_rdfl_buffer *b, size_t amount) {
-  void		*tmp;
+  void		*tmp = b->buffer;
 
-  if (b->raw.last != NULL) {
-    tmp = &b->raw.last->next;
-  }
+  if (b->list != NULL) {
+    tmp = &b->buffer;
+  } // TODO
   if (!(b->raw.last = _add_new(tmp, sizeof(t_rdfl_b))))
-    return (EXIT_FAILURE);
+    goto bfailure;
   if (!(b->raw.last->data = malloc(amount)))
-    return (EXIT_FAILURE);
+    goto bfailure;
   b->raw.last->size = amount;
   b->raw.last->nb_used = 0;
   b->raw.last->next = NULL;
   return (EXIT_SUCCESS);
+bfailure:
+  rdfl_buffer_clean(b);
+  return (EXIT_FAILURE);
 }
 
 void
