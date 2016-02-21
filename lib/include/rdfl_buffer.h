@@ -4,25 +4,15 @@
 typedef struct		s_rdfl_b_list {
   void			*data;
   size_t		size;
-  int			nb_used;
+  size_t		begin;
+  size_t		end;
   struct s_rdfl_b_list	*next;
 }			t_rdfl_b_list;
 
 typedef			struct {
   t_rdfl_b_list		*first;
-  t_rdfl_b_list		*last;
+  t_rdfl_b_list		*consummer;
   size_t		total;
-}			t_rdfl_b;
-
-typedef	struct		s_rdfl_reader {
-  void			*chunk;
-  size_t		size;
-  struct s_rdfl_reader	*next;
-}			t_rdfl_reader; // circular
-
-typedef			struct {
-  t_rdfl_b		raw;
-  t_rdfl_reader		*consummer;
 }			t_rdfl_buffer;
 
 void		rdfl_buffer_init(t_rdfl_buffer *, size_t);

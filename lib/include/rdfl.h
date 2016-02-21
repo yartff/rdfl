@@ -30,8 +30,8 @@ typedef			struct {
 
 typedef			struct {
   t_rdfl_values		v;
-  int			fd;
   e_rdflsettings	settings;
+  int			fd;
   t_rdfl_buffer		data;
 }			t_rdfl;
 
