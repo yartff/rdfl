@@ -18,9 +18,10 @@ typedef			enum {
   RDFL_CONSUMER_THREAD	= (RDFL_NONE + 1) << 3,
   RDFL_NO_EXTEND	= (RDFL_NONE + 1) << 4,
   RDFL_ALL_AVAILABLE	= (RDFL_NONE + 1) << 5,
-  RDFL_THREADSAFE	= (RDFL_NONE + 1) << 5,
-  // RDFL_SIGMASK	= (RDFL_NONE + 1) << 6, // Use pselect instead
-  RDFL_LAST		= (RDFL_NONE + 1) << 7,
+  RDFL_THREADSAFE	= (RDFL_NONE + 1) << 6,
+  RDFL_MONITORING	= (RDFL_NONE + 1) << 7,
+  // RDFL_SIGMASK	= (RDFL_NONE + 1) << 8, // Use pselect instead
+  RDFL_LAST		= (RDFL_NONE + 1) << 9,
 }			e_rdflsettings;
 
 typedef			struct {
