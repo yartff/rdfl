@@ -2,6 +2,7 @@
 # define		__RDFL_H_
 
 # include		<stdio.h>
+# include		<unistd.h>
 # include		"rdfl_buffer.h"
 
 # define		RDFL_OPT_ISSET(value, opt)	(value & opt)

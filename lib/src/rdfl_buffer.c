@@ -2,66 +2,58 @@
 #include	<string.h>
 #include	<stdlib.h>
 #include	"rdfl_buffer.h"
+#include	"rdfl_local.h"
 
 // Destructors
 //
-static
 void
-clean_reader(t_rdfl_reader *r) {
-  t_rdfl_buffer		*tmp;
-  while (r) {
-    tmp = r;
-    r = r->next;
-    free(tmp);
-  }
+rdfl_b_del(t_rdfl_buffer *b) {
+  t_rdfl_b_list	*freed = b->buffer.raw;
+  b->buffer.raw = b->buffer.raw->next;
+  free(freed->data);
+  free(freed);
 }
 
 void
 rdfl_buffer_clean(t_rdfl_buffer *b) {
   if (!b) return ;
-  while (b->first) // HERE
-  if (b->consummer) {
-    clean_reader(b->consummer);
-    free(b->consummer);
-  }
+  while (b->buffer.raw) // HERE
+    rdfl_b_del(b);
 }
 
 // Constructors
 //
-static
-void *
-_add_new(void **oldptr, size_t s) {
-  *oldptr = malloc(s);
-  memset(*oldptr, 0, s);
-  return (*oldptr);
+
+int
+rdfl_b_add(t_rdfl_buffer *b, size_t amount) {
+  t_rdfl_b_list		*tmp;
+
+  if (b->buffer.raw != NULL) {
+    tmp = b->consummer.raw;
+  } // TODO
+  if (!(b->buffer.raw->next = malloc(sizeof(*(b->buffer.raw)))))
+    return (EXIT_FAILURE);
+  b->buffer.raw = b->buffer.raw->next;
+  if (!(b->buffer.raw->data = malloc(amount))) {
+    free(tmp->next);
+    tmp->next = NULL;
+    b->buffer.raw = tmp;
+    return (EXIT_FAILURE);
+  }
+  b->buffer.raw->size = amount;
+  b->buffer.raw->next = NULL;
+  return (EXIT_SUCCESS);
 }
 
 int
-rdfl_b_create(t_rdfl_buffer *b, size_t amount) {
-  void		*tmp = b->buffer;
-
-  if (b->list != NULL) {
-    tmp = &b->buffer;
-  } // TODO
-  if (!(b->raw.last = _add_new(tmp, sizeof(t_rdfl_b))))
-    goto bfailure;
-  if (!(b->raw.last->data = malloc(amount)))
-    goto bfailure;
-  b->raw.last->size = amount;
-  b->raw.last->nb_used = 0;
-  b->raw.last->next = NULL;
-  return (EXIT_SUCCESS);
-bfailure:
-  rdfl_buffer_clean(b);
-  return (EXIT_FAILURE);
-}
-
-void
 rdfl_buffer_init(t_rdfl_buffer *b, size_t amount) {
   memset(b, 0, sizeof(*b));
   if (amount != 0) {
+    if (rdfl_b_add(b, amount) == EXIT_FAILURE)
+      return (EXIT_FAILURE);
     // TODO allocate 1 buffer
   }
-  printf("rdfl_buffer: %zu\nrdfl_b: %zu\nrdfl_b_list: %zu\nrdfl_reader: %zu\n",
-      sizeof(t_rdfl_buffer), sizeof(t_rdfl_b), sizeof(t_rdfl_b_list), sizeof(t_rdfl_reader));
+  return (EXIT_SUCCESS);
+  printf("rdfl_buffer: %zu\nrdfl_b: %zu\nrdfl_b_list: %zu\n",
+      sizeof(t_rdfl_buffer), sizeof(t_rdfl_b), sizeof(t_rdfl_b_list));
 }

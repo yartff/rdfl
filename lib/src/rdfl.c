@@ -70,7 +70,8 @@ rdfl_load(t_rdfl *new, int fd, e_rdflsettings settings) {
   new->fd = fd;
   new->settings = settings;
   amount = (RDFL_OPT_ISSET(settings, RDFL_NO_EXTEND) ? new->v.buffsize : 0);
-  rdfl_buffer_init(&(new->data), amount);
+  if (rdfl_buffer_init(&(new->data), amount) == EXIT_FAILURE)
+    return (NULL);
   return (_check_func(settings));
 }
 

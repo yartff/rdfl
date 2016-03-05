@@ -1,4 +1,6 @@
-NAME		=		librdfl.so
+NAME		=		librdfl_$(HOSTTYPE).so
+NOLN_NAME	=		librdfl.so
+
 SRCDIR		=		src/
 INCDIR		=		include/
 
@@ -17,16 +19,17 @@ CFLAGS		+=		-I$(INCDIR)
 CFLAGS		+=		-D_POSIX_C_SOURCE
 ## CFLAGS		+=		-g3
 
-$(NAME):		$(OBJ)
+$(NOLN_NAME):		$(OBJ)
 	$(CMD_CC) $(OBJ) -shared -o $(NAME) $(LD_FLAGS)
+	ln -s $(NAME) $(NOLN_NAME)
 
-all:			$(NAME)
+all:			$(NOLN_NAME)
 
 clean:
 	$(CMD_RM) $(OBJ)
 
 fclean:			clean
-	$(CMD_RM) $(NAME)
+	$(CMD_RM) $(NAME) $(NOLN_NAME)
 
 re:	fclean all
 
