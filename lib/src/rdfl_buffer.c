@@ -1,4 +1,5 @@
 #include	<unistd.h>
+#include	<limits.h>
 #include	<stdio.h>
 #include	<string.h>
 #include	<stdlib.h>
@@ -14,45 +15,54 @@ push_read(int fd, void *ptr, size_t s) {
   if (s > SSIZE_MAX)
     return (B_ERR_SIZETOOBIG);
   if ((nb = read(fd, ptr, s)) == -1) {
-    return (-1);
+    return (B_ERR_READ);
   }
+  return (nb);
 }
 
 ssize_t
 rdfl_b_push_extend(t_rdfl_buffer *b, int fd, size_t s) {
   (void)b, (void)fd, (void)s;
+  return (0); // TODO
 }
 
 ssize_t
 rdfl_b_push(t_rdfl_buffer *b, int fd, size_t s) {
-  (void)b, (void)fd, (void)s;
+  (void)b, (void)fd, (void)s; // TODO
+  return (0);
 }
 
 void *
-rdfl_b_getdataptr(t_rdfl_buffer *b, size_t *s) {
-  *s = b->consummer.raw->size - b->consummer.ndx;
-  return (b->consummer.raw);
+rdfl_b_getfreechunk(t_rdfl_buffer *b, size_t *s) {
+  *s = b->buffer.raw->size - b->buffer.ndx;
+  return (b->buffer.raw->data + b->buffer.ndx);
 }
 
 void *
 rdfl_b_getfreechunkptr(t_rdfl_buffer *b, size_t *s) {
+  (void)s; // TODO
   return (b->buffer.raw);
 }
 
 int
-rdfl_b_consummechunk_size(t_rdfl_buffer *b, size_t s) {
+rdfl_b_datachunk_size(t_rdfl_buffer *b, size_t s) {
+  (void)b, (void)s; // TODO
+  return (0);
 }
 
 size_t
 rdfl_b_datasize(t_rdfl_buffer *b) {
+  return (b->total);
 }
 
 // Destructors
 //
 void
 rdfl_b_del(t_rdfl_buffer *b) {
-  t_rdfl_b_list	*freed = b->buffer.raw;
-  b->buffer.raw = b->buffer.raw->next;
+  t_rdfl_b_list	*freed = b->consummer.raw;
+  b->consummer.raw = b->consummer.raw->next;
+  if (b->consummer.raw == NULL)
+    b->buffer.raw = NULL;
   free(freed->data);
   free(freed);
 }
@@ -108,8 +118,6 @@ rdfl_b_add_last(t_rdfl_buffer *b, size_t amount) {
 
 int
 rdfl_b_add(t_rdfl_buffer *b, size_t amount) {
-  t_rdfl_b_list		*tmp;
-
   if (b->buffer.raw == NULL)
     return (rdfl_b_add_first(b, amount));
   return (rdfl_b_add_last(b, amount));
