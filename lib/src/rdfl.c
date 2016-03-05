@@ -34,7 +34,7 @@ rdfl_clean(t_rdfl *obj) {
   if (!obj) return ;
   if (RDFL_OPT_ISSET(obj->settings, RDFL_LOC_OPEN))
     close(obj->fd);
-  // TODO clean buffer;
+  rdfl_buffer_clean(&obj->data);
   if (RDFL_OPT_ISSET(obj->settings, RDFL_LOC_ALLOC))
     free(obj);
 }
@@ -92,6 +92,12 @@ rdfl_load_path(t_rdfl *new, const char *path, e_rdflsettings settings) {
     return (NULL);
   RDFL_OPT_SET(settings, RDFL_LOC_OPEN);
   return (rdfl_load(new, fd, settings));
+}
+
+void *
+rdfl_connect(t_rdfl *new, const char *ip, int port) {
+  (void)new, (void)ip, (void)port;
+  return (NULL);
 }
 
 // Helpers
