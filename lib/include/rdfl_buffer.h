@@ -22,6 +22,7 @@ typedef struct		{
   t_rdfl_b_list		*raw;
   size_t		ndx;
   size_t		end;
+  size_t		total;
 }			t_rdfl_cm;
 
 // the first shall never be filled again if a next exists
@@ -29,7 +30,6 @@ typedef struct		{
 typedef			struct {
   t_rdfl_bm		buffer;
   t_rdfl_cm		consummer;
-  size_t		total;
 }			t_rdfl_buffer;
 
 // in push

@@ -1,3 +1,4 @@
+#include	<unistd.h>
 #include	<stdio.h>
 #include	<string.h>
 #include	<stdlib.h>
@@ -67,25 +68,51 @@ rdfl_buffer_clean(t_rdfl_buffer *b) {
 //
 
 int
+rdfl_b_add_first(t_rdfl_buffer *b, size_t amount) {
+  register t_rdfl_b_list	*tmp;
+
+  if (!(b->buffer.raw = malloc(sizeof(*(b->buffer.raw)))))
+    return (EXIT_FAILURE);
+  tmp = b->buffer.raw;
+  if (!(tmp->data = malloc(amount))) {
+    free(tmp);
+    b->buffer.raw = NULL;
+    return (EXIT_FAILURE);
+  }
+  tmp->size = amount;
+  tmp->next = NULL;
+  b->buffer.ndx = 0;
+  b->consummer.raw = b->buffer.raw;
+  b->consummer.ndx = 0;
+  b->consummer.end = 0;
+  b->consummer.total = 0;
+  return (EXIT_SUCCESS);
+}
+
+int
+rdfl_b_add_last(t_rdfl_buffer *b, size_t amount) {
+  if (!(b->buffer.raw->next = malloc(sizeof(*(b->buffer.raw->next)))))
+    return (EXIT_FAILURE);
+  if (!(b->buffer.raw->next->data = malloc(amount))) {
+    free(b->buffer.raw->next);
+    b->buffer.raw->next = NULL;
+    return (EXIT_FAILURE);
+  }
+  b->buffer.raw = b->buffer.raw->next;
+  b->buffer.raw->size = amount;
+  b->buffer.raw->next = NULL;
+  b->consummer.end = b->buffer.ndx;
+  b->buffer.ndx = 0;
+  return (EXIT_SUCCESS);
+}
+
+int
 rdfl_b_add(t_rdfl_buffer *b, size_t amount) {
   t_rdfl_b_list		*tmp;
 
-  if (b->buffer.raw != NULL) {
-    tmp = b->consummer.raw;
-  }
-  if (!(b->buffer.raw->next = malloc(sizeof(*(b->buffer.raw)))))
-    return (EXIT_FAILURE);
-  b->buffer.raw = b->buffer.raw->next;
-  if (!(b->buffer.raw->data = malloc(amount))) {
-    free(tmp->next);
-    tmp->next = NULL;
-    b->buffer.raw = tmp;
-    return (EXIT_FAILURE);
-  }
-  b->buffer.ndx = 0;
-  b->buffer.raw->size = amount;
-  b->buffer.raw->next = NULL;
-  return (EXIT_SUCCESS);
+  if (b->buffer.raw == NULL)
+    return (rdfl_b_add_first(b, amount));
+  return (rdfl_b_add_last(b, amount));
 }
 
 int
