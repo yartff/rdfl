@@ -21,7 +21,7 @@ typedef struct		{
 typedef struct		{
   t_rdfl_b_list		*raw;
   size_t		ndx;
-  size_t		end;
+  size_t		l_total;
   size_t		total;
 }			t_rdfl_cm;
 
@@ -38,5 +38,6 @@ typedef			struct {
 //   if begin == end -> delete first
 int		rdfl_buffer_init(t_rdfl_buffer *, size_t);
 int		rdfl_b_create(t_rdfl_buffer *, size_t);
+void		rdfl_buffer_clean(t_rdfl_buffer *);
 
 #endif			/* !__RDFL_BUFFER_H_ */

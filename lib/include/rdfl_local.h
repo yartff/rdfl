@@ -3,7 +3,7 @@
 
 # include		"rdfl.h"
 
-# define		RDFL_DEFAULT_BUFFSIZE	4096 // (bytes)
+# define		RDFL_DEFAULT_BUFFSIZE	4096 // (bytes) // TODO pagesize() ?
 # define		RDFL_DEFAULT_TIMEOUT	0 // (non-blocking reads)
 
 typedef			enum {

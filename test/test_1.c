@@ -1,4 +1,5 @@
 #include	<stdlib.h>
+#include	<stdio.h>
 #include	"rdfl.h"
 
 int
@@ -7,6 +8,8 @@ main() {
 
   rdfl_init(&example);
   // Set options if needed
-  printf("%s", handler_typedef_declare(rdfl_load(&example, 0, RDFL_ALL_AVAILABLE))); printf("\n");
+  readall_handler_t	rdfl_read;
+  rdfl_read = handler_typedef_declare(rdfl_load(&example,
+	  0, RDFL_ALL_AVAILABLE));
   return (EXIT_SUCCESS);
 }

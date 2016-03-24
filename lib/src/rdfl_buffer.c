@@ -20,6 +20,8 @@ push_read(int fd, void *ptr, size_t s) {
   return (nb);
 }
 
+// Methods
+//
 ssize_t
 rdfl_b_push_extend(t_rdfl_buffer *b, int fd, size_t s) {
   (void)b, (void)fd, (void)s;
@@ -39,24 +41,24 @@ rdfl_b_getfreechunk(t_rdfl_buffer *b, size_t *s) {
 }
 
 void *
-rdfl_b_getfreechunkptr(t_rdfl_buffer *b, size_t *s) {
+rdfl_b_getfreewritable_size(t_rdfl_buffer *b, size_t *s) {
   (void)s; // TODO
   return (b->buffer.raw);
 }
 
-int
-rdfl_b_datachunk_size(t_rdfl_buffer *b, size_t s) {
-  (void)b, (void)s; // TODO
-  return (0);
+size_t
+rdfl_b_datachunk_size(t_rdfl_buffer *b) {
+  return (b->consummer.l_total);
 }
 
 size_t
-rdfl_b_datasize(t_rdfl_buffer *b) {
-  return (b->total);
+rdfl_b_data_size(t_rdfl_buffer *b) {
+  return (b->consummer.total);
 }
 
 // Destructors
 //
+static
 void
 rdfl_b_del(t_rdfl_buffer *b) {
   t_rdfl_b_list	*freed = b->consummer.raw;
@@ -76,26 +78,24 @@ rdfl_buffer_clean(t_rdfl_buffer *b) {
 
 // Constructors
 //
-
 int
 rdfl_b_add_first(t_rdfl_buffer *b, size_t amount) {
   register t_rdfl_b_list	*tmp;
 
-  if (!(b->buffer.raw = malloc(sizeof(*(b->buffer.raw)))))
+  if (!(tmp = malloc(sizeof(*(b->buffer.raw)))))
     return (EXIT_FAILURE);
-  tmp = b->buffer.raw;
   if (!(tmp->data = malloc(amount))) {
     free(tmp);
-    b->buffer.raw = NULL;
     return (EXIT_FAILURE);
   }
   tmp->size = amount;
   tmp->next = NULL;
+  b->buffer.raw = tmp;
   b->buffer.ndx = 0;
   b->consummer.raw = b->buffer.raw;
   b->consummer.ndx = 0;
-  b->consummer.end = 0;
   b->consummer.total = 0;
+  b->consummer.l_total = 0;
   return (EXIT_SUCCESS);
 }
 
@@ -111,7 +111,6 @@ rdfl_b_add_last(t_rdfl_buffer *b, size_t amount) {
   b->buffer.raw = b->buffer.raw->next;
   b->buffer.raw->size = amount;
   b->buffer.raw->next = NULL;
-  b->consummer.end = b->buffer.ndx;
   b->buffer.ndx = 0;
   return (EXIT_SUCCESS);
 }

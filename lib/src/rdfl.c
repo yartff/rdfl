@@ -69,8 +69,9 @@ rdfl_load(t_rdfl *new, int fd, e_rdflsettings settings) {
     return (NULL);
   new->fd = fd;
   new->settings = settings;
-  amount = (RDFL_OPT_ISSET(settings, RDFL_NO_EXTEND) ? new->v.buffsize : 0);
-  if (rdfl_buffer_init(&(new->data), amount) == EXIT_FAILURE)
+  if (rdfl_buffer_init(&(new->data),
+	(RDFL_OPT_ISSET(settings, RDFL_NO_EXTEND) ?
+	 new->v.buffsize : 0)) == EXIT_FAILURE)
     return (NULL);
   return (_check_func(settings));
 }
@@ -96,6 +97,7 @@ rdfl_load_path(t_rdfl *new, const char *path, e_rdflsettings settings) {
 
 void *
 rdfl_connect(t_rdfl *new, const char *ip, int port) {
+  // TODO
   (void)new, (void)ip, (void)port;
   return (NULL);
 }
@@ -129,9 +131,9 @@ void	rdfl_init(t_rdfl *dest) {
     .timeout = RDFL_DEFAULT_TIMEOUT,
     .buffsize = RDFL_DEFAULT_BUFFSIZE,
   };
-  memset(dest, 0, sizeof(*dest));
   memcpy(&(dest->v), &v, sizeof(dest->v));
   dest->settings = RDFL_NONE;
+  dest->fd = -1;
 }
 
 t_rdfl	*rdfl_init_new(void) {

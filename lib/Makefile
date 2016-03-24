@@ -21,7 +21,7 @@ CFLAGS		+=		-D_POSIX_C_SOURCE
 
 $(NOLN_NAME):		$(OBJ)
 	$(CMD_CC) $(OBJ) -shared -o $(NAME) $(LD_FLAGS)
-	ln -s $(NAME) $(NOLN_NAME)
+	ln -fs $(NAME) $(NOLN_NAME)
 
 all:			$(NOLN_NAME)
 
