@@ -29,7 +29,7 @@ typedef struct		{
 // it is destroyed when empty
 typedef			struct {
   t_rdfl_bm		buffer;
-  t_rdfl_cm		consummer;
+  t_rdfl_cm		consumer;
 }			t_rdfl_buffer;
 
 // in push
@@ -39,5 +39,10 @@ typedef			struct {
 int		rdfl_buffer_init(t_rdfl_buffer *, size_t);
 int		rdfl_b_create(t_rdfl_buffer *, size_t);
 void		rdfl_buffer_clean(t_rdfl_buffer *);
+ssize_t		rdfl_b_push_all_local_monitoring(t_rdfl_buffer *,
+    int fd, ssize_t buffersize, long timeout_value);
+ssize_t		rdfl_b_push_all_local(t_rdfl_buffer *, int, size_t);
+void		*rdfl_b_consume_all(t_rdfl_buffer *b, ssize_t *count_value);
+void		rdfl_b_fullclean_if_empty(t_rdfl_buffer *);
 
 #endif			/* !__RDFL_BUFFER_H_ */

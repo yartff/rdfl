@@ -4,13 +4,35 @@
 #include	<string.h>
 #include	"rdfl_local.h"
 
-// API
+// API Consummers
+//
+void *
+rdfl_flush_buffers(t_rdfl *obj, ssize_t *count_value) {
+  void		*ptr;
+
+  if (!(ptr = rdfl_b_consume_all(&obj->data, count_value))) {
+    return (NULL);
+  }
+  if (RDFL_OPT_ISSET(obj->settings, RDFL_FULLEMPTY))
+    rdfl_b_fullclean_if_empty(&obj->data);
+  return (ptr);
+}
+
+// API Readers
 //
 static
-void *
-_read_all_available(t_rdfl *obj, ssize_t *count_value) {
-  (void)count_value, (void)obj;
-  return (NULL);
+ssize_t
+_read_all_available(t_rdfl *obj) {
+  if (RDFL_OPT_ISSET(obj->settings, RDFL_MONITORING)) {
+    if (rdfl_b_push_all_local_monitoring(&obj->data, obj->fd, obj->v.buffsize,
+	RDFL_OPT_ISSET(obj->settings, RDFL_TIMEOUT) ? obj->v.timeout : -1) == -1) {
+      return (-1);
+    }
+  }
+  else if (rdfl_b_push_all_local(&obj->data, obj->fd, obj->v.buffsize) == -1) {
+    return (-1);
+  }
+  return (obj->data.consumer.total);
 }
 
 static
@@ -24,6 +46,13 @@ static
 ssize_t
 _read_legacy(t_rdfl *obj, void *buf, size_t count) {
   (void)obj, (void)buf, (void)count;
+  return (0);
+}
+
+static
+void *
+_read_alloc(t_rdfl *obj, ssize_t *count) {
+  (void)obj, (void)count;
   return (0);
 }
 
@@ -44,10 +73,20 @@ rdfl_clean(t_rdfl *obj) {
 static
 int
 _check_settings(e_rdflsettings settings) {
-  if (RDFL_OPT_ISSET(settings, RDFL_ALL_AVAILABLE) &&
-      (RDFL_OPT_ISSET(settings, RDFL_INPLACE) || RDFL_OPT_ISSET(settings, RDFL_NO_EXTEND))) {
+  if (RDFL_OPT_ISSET(settings, RDFL_ALL_AVAILABLE)
+      && (RDFL_OPT_ISSET(settings, RDFL_NO_EXTEND))) {
     return (EXIT_FAILURE);
-  } // Cannot read ALL_AVAILABLE with constraints from INPLACE or/and NO_EXTEND
+  } // Cannot read ALL_AVAILABLE with constraints from NO_EXTEND
+  if ((RDFL_OPT_ISSET(settings, RDFL_ALL_AVAILABLE)
+	|| RDFL_OPT_ISSET(settings, RDFL_ALLOC))
+      && RDFL_OPT_ISSET(settings, RDFL_INPLACE)) {
+    return (EXIT_FAILURE);
+  } // Cannot read ALL_AVAILABLE being INPLACE
+  // Cannot alloc AND be in place
+  if (RDFL_OPT_ISSET(settings, RDFL_TIMEOUT)
+      && !RDFL_OPT_ISSET(settings, RDFL_MONITORING)) {
+    return (EXIT_FAILURE);
+  } // Cannot apply a timeout without monitoring the fd
   return (EXIT_SUCCESS);
 }
 
@@ -58,13 +97,13 @@ _check_func(e_rdflsettings settings) {
     return (&_read_inplace);
   if (RDFL_OPT_ISSET(settings, RDFL_ALL_AVAILABLE))
     return (&_read_all_available);
+  if (RDFL_OPT_ISSET(settings, RDFL_ALLOC))
+    return (&_read_alloc);
   return (&_read_legacy);
 }
 
 void *
 rdfl_load(t_rdfl *new, int fd, e_rdflsettings settings) {
-  size_t		amount;
-
   if (_check_settings(settings) == EXIT_FAILURE)
     return (NULL);
   new->fd = fd;
@@ -113,7 +152,8 @@ handler_typedef_declare(void *ptr) {
   } nametypes[] = {
     {&_read_all_available, "readall_handler_t"},
     {&_read_inplace, "readinpl_handler_t"},
-    {&_read_legacy, "readlegacy_handler_t"}
+    {&_read_legacy, "readlegacy_handler_t"},
+    {&_read_alloc, "readalloc_handler_t"}
   };
   while (i < (sizeof(nametypes) / sizeof(*nametypes))) {
     if (ptr == nametypes[i].ptr)
@@ -146,5 +186,5 @@ t_rdfl	*rdfl_init_new(void) {
 
 void rdfl_set_timeout(t_rdfl *r, ssize_t timeout)
 { r->v.timeout = (timeout < -1 ? RDFL_DEFAULT_TIMEOUT : timeout); }
-void rdfl_set_buffsize(t_rdfl *r, size_t buffsize)
+void rdfl_set_buffsize(t_rdfl *r, ssize_t buffsize)
 { r->v.buffsize = ((buffsize == 0) ? RDFL_DEFAULT_BUFFSIZE : buffsize); }

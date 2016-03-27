@@ -21,12 +21,17 @@ typedef			enum {
   RDFL_THREADSAFE	= (RDFL_NONE + 1) << 6,
   RDFL_MONITORING	= (RDFL_NONE + 1) << 7,
   // RDFL_SIGMASK	= (RDFL_NONE + 1) << 8, // Use pselect instead
-  RDFL_LAST		= (RDFL_NONE + 1) << 9,
+  RDFL_FULLEMPTY	= (RDFL_NONE + 1) << 9,
+  // ALLOC is considered activated if ALL_AVAILABLE is
+  RDFL_ALLOC		= (RDFL_NONE + 1) << 10,
+  // CHUNKS is considered activated if IN_PLACE is
+  RDFL_CHUNKS		= (RDFL_NONE + 1) << 11,
+  RDFL_LAST		= (RDFL_NONE + 1) << 12,
 }			e_rdflsettings;
 
 typedef			struct {
   ssize_t		timeout;
-  size_t		buffsize;
+  ssize_t		buffsize;
 }			t_rdfl_values;
 
 typedef			struct {
@@ -36,9 +41,10 @@ typedef			struct {
   t_rdfl_buffer		data;
 }			t_rdfl;
 
-typedef	void		*(*readall_handler_t)(t_rdfl *, ssize_t *);
+typedef	ssize_t		(*readall_handler_t)(t_rdfl *);
 typedef	void		*(*readinpl_handler_t)(t_rdfl *, ssize_t *, size_t consumed);
 typedef	ssize_t		(*readlegacy_handler_t)(t_rdfl *, void *, size_t);
+typedef void		*(*readalloc_handler_t)(t_rdfl *, ssize_t *);
 
 // API
 //
@@ -47,8 +53,10 @@ void		*rdfl_load(t_rdfl *, int fd, e_rdflsettings);
 void		*rdfl_load_fileptr(t_rdfl *, FILE *file_ptr, e_rdflsettings);
 void		*rdfl_load_path(t_rdfl *, const char *path, e_rdflsettings);
 const char	*handler_typedef_declare(void *ptr);
+void		rdfl_clean(t_rdfl *obj);
 
 void		rdfl_set_timeout(t_rdfl *, ssize_t timeout);
-void		rdfl_set_buffsize(t_rdfl *, size_t buffsize);
+void		rdfl_set_buffsize(t_rdfl *, ssize_t buffsize);
+void		*rdfl_flush_buffers(t_rdfl *obj, ssize_t *count_value);
 
 #endif			/* !__RDFL_H_ */
