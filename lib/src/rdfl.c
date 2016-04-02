@@ -4,13 +4,29 @@
 #include	<string.h>
 #include	"rdfl_local.h"
 
+// API infos
+//
+inline
+size_t
+rdfl_get_total_datasize(t_rdfl *obj) {
+  return (obj->data.consumer.total);
+}
+
+// API Utils
+//
+ssize_t
+rdfl_read_ignore_size(t_rdfl *obj, size_t s) {
+  (void)obj, (void)s; // if monitoring etc...
+  return (-1);
+}
+
 // API Consummers
 //
 void *
-rdfl_flush_buffers(t_rdfl *obj, ssize_t *count_value) {
+rdfl_flush_buffers_alloc(t_rdfl *obj, ssize_t *count_value) {
   void		*ptr;
 
-  if (!(ptr = rdfl_b_consume_all(&obj->data, count_value))) {
+  if (!(ptr = rdfl_b_consume_all_alloc(&obj->data, count_value))) {
     return (NULL);
   }
   if (RDFL_OPT_ISSET(obj->settings, RDFL_FULLEMPTY))
@@ -18,28 +34,80 @@ rdfl_flush_buffers(t_rdfl *obj, ssize_t *count_value) {
   return (ptr);
 }
 
+void *
+rdfl_flush_firstbuffer_alloc(t_rdfl *obj, ssize_t *count_value) {
+  void		*ptr;
+  
+  if (!(ptr = rdfl_b_consume_firstbuffer_alloc(&obj->data, count_value)))
+    return (NULL);
+  if (RDFL_OPT_ISSET(obj->settings, RDFL_FULLEMPTY))
+    rdfl_b_fullclean_if_empty(&obj->data);
+  return (ptr);
+}
+
+void *
+rdfl_getinplace_next_chunk(t_rdfl *obj, size_t *s, size_t *total_s) {
+  void		*ptr;
+
+  ptr = rdfl_b_next_chunk(&obj->data, s);
+  *total_s = obj->data.consumer.total;
+  return (ptr);
+}
+
 // API Readers
 //
 static
-ssize_t
-_read_all_available(t_rdfl *obj) {
-  if (RDFL_OPT_ISSET(obj->settings, RDFL_MONITORING)) {
-    if (rdfl_b_push_all_local_monitoring(&obj->data, obj->fd, obj->v.buffsize,
-	RDFL_OPT_ISSET(obj->settings, RDFL_TIMEOUT) ? obj->v.timeout : -1) == -1) {
+int
+_read_size(t_rdfl *obj, size_t count) {
+  void		*ptr;
+  ssize_t	s;
+  size_t	available;
+
+  while (count) {
+    if (!(ptr = rdfl_b_buffer_getchunk_extend(&obj->data, &available, obj->v.buffsize)))
       return (-1);
-    }
+    if (available > count) available = count;
+    if ((s = rdfl_b_push_read(&obj->data, obj->fd, ptr, available)) == -1)
+      return (-1);
+    count -= (size_t)s;
   }
-  else if (rdfl_b_push_all_local(&obj->data, obj->fd, obj->v.buffsize) == -1) {
-    return (-1);
-  }
-  return (obj->data.consumer.total);
+  return (0);
 }
 
 static
-void *
-_read_inplace(t_rdfl *obj, ssize_t *count_value, size_t consumed) {
-  (void)obj, (void)count_value, (void)consumed;
-  return (NULL);
+ssize_t
+_read_all_available(t_rdfl *obj) {
+  size_t	available, total = 0;
+  ssize_t	full = 1;
+  void		*ptr;
+
+  // TODO monitoring
+  while (full) {
+    if (!(ptr = rdfl_b_buffer_getchunk_extend(&obj->data, &available, obj->v.buffsize)))
+      return (-1);
+    if ((full = rdfl_b_push_read(&obj->data, obj->fd, ptr, available)) == -1)
+      return (-1);
+    total += full;
+    full = ((size_t)full == available);
+  }
+  return (total);
+}
+
+static
+ssize_t
+_read_noextend(t_rdfl *obj, size_t consume) {
+  size_t	s;
+  ssize_t	ret;
+  void		*ptr;
+
+  rdfl_b_consume_size(&obj->data, consume);
+  ptr = rdfl_b_buffer_getchunk(&obj->data, &s);
+  if (!s) return (0); // TODO NO SPACE
+  if ((ret = rdfl_b_push_read(&obj->data, obj->fd, ptr, s)) == -1)
+    return (-1);
+  rdfl_b_buffer_getchunk(&obj->data, &s);
+  return (ret);
+  // TODO read more if available
 }
 
 static
@@ -50,10 +118,18 @@ _read_legacy(t_rdfl *obj, void *buf, size_t count) {
 }
 
 static
-void *
-_read_alloc(t_rdfl *obj, ssize_t *count) {
-  (void)obj, (void)count;
-  return (0);
+ssize_t
+_read_monitoring(t_rdfl *obj) {
+  if (RDFL_OPT_ISSET(obj->settings, RDFL_ALL_AVAILABLE)) {
+    /*
+       return (rdfl_b_push_all_local_monitoring(&obj->data, obj->fd, obj->v.buffsize,
+       RDFL_OPT_ISSET(obj->settings, RDFL_TIMEOUT) ? obj->v.timeout : -1));
+       */ // TODO
+  }
+  if (RDFL_OPT_ISSET(obj->settings, RDFL_NO_EXTEND)) {
+    // TODO
+  }
+  return (-1);
 }
 
 // Destructors
@@ -77,28 +153,33 @@ _check_settings(e_rdflsettings settings) {
       && (RDFL_OPT_ISSET(settings, RDFL_NO_EXTEND))) {
     return (EXIT_FAILURE);
   } // Cannot read ALL_AVAILABLE with constraints from NO_EXTEND
-  if ((RDFL_OPT_ISSET(settings, RDFL_ALL_AVAILABLE)
-	|| RDFL_OPT_ISSET(settings, RDFL_ALLOC))
-      && RDFL_OPT_ISSET(settings, RDFL_INPLACE)) {
-    return (EXIT_FAILURE);
-  } // Cannot read ALL_AVAILABLE being INPLACE
-  // Cannot alloc AND be in place
   if (RDFL_OPT_ISSET(settings, RDFL_TIMEOUT)
       && !RDFL_OPT_ISSET(settings, RDFL_MONITORING)) {
     return (EXIT_FAILURE);
   } // Cannot apply a timeout without monitoring the fd
+  if (RDFL_OPT_ISSET(settings, RDFL_LEGACY)
+      && (RDFL_OPT_ISSET(settings, RDFL_ALL_AVAILABLE)
+	|| (RDFL_OPT_ISSET(settings, RDFL_FULLEMPTY)))) {
+    return (EXIT_FAILURE);
+  } // LEGACY means reading in the user's buffer
+  if (RDFL_OPT_ISSET(settings, RDFL_FULLEMPTY)
+      && RDFL_OPT_ISSET(settings, RDFL_NO_EXTEND)) {
+    return (EXIT_FAILURE);
+  } // NO_EXTEND will always have a fixed buffer. Won't free it.
   return (EXIT_SUCCESS);
 }
 
 static
 void *
 _check_func(e_rdflsettings settings) {
-  if (RDFL_OPT_ISSET(settings, RDFL_INPLACE))
-    return (&_read_inplace);
+  if (RDFL_OPT_ISSET(settings, RDFL_FORCESIZE))
+    return (&_read_size);
+  if (RDFL_OPT_ISSET(settings, RDFL_MONITORING))
+    return (&_read_monitoring);
+  if (RDFL_OPT_ISSET(settings, RDFL_NO_EXTEND))
+    return (&_read_noextend);
   if (RDFL_OPT_ISSET(settings, RDFL_ALL_AVAILABLE))
     return (&_read_all_available);
-  if (RDFL_OPT_ISSET(settings, RDFL_ALLOC))
-    return (&_read_alloc);
   return (&_read_legacy);
 }
 
@@ -109,8 +190,8 @@ rdfl_load(t_rdfl *new, int fd, e_rdflsettings settings) {
   new->fd = fd;
   new->settings = settings;
   if (rdfl_buffer_init(&(new->data),
-	(RDFL_OPT_ISSET(settings, RDFL_NO_EXTEND) ?
-	 new->v.buffsize : 0)) == EXIT_FAILURE)
+	(RDFL_OPT_ISSET(settings, RDFL_FULLEMPTY) ?
+	 0 : new->v.buffsize)) == EXIT_FAILURE)
     return (NULL);
   return (_check_func(settings));
 }
@@ -151,9 +232,10 @@ handler_typedef_declare(void *ptr) {
     const char	*name;
   } nametypes[] = {
     {&_read_all_available, "readall_handler_t"},
-    {&_read_inplace, "readinpl_handler_t"},
-    {&_read_legacy, "readlegacy_handler_t"},
-    {&_read_alloc, "readalloc_handler_t"}
+    {&_read_noextend, "readnoextend_handler_t"},
+    {&_read_monitoring, "readmonitoring_handler_t"},
+    {&_read_size, "readsize_handler_t"},
+    {&_read_legacy, "readlegacy_handler_t"}
   };
   while (i < (sizeof(nametypes) / sizeof(*nametypes))) {
     if (ptr == nametypes[i].ptr)

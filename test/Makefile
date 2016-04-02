@@ -5,7 +5,10 @@ INCDIR		=		$(LIBDIR)include/
 CMD_CC		=		gcc
 CMD_RM		=		@rm -rfv
 
-SRC		=		test_1.c
+SRC		=		main_test.c				\
+				test_1-allavailable_reader.c		\
+				test_2-inplace_reader.c
+
 OBJ		=		$(SRC:.c=.o)
 
 LD_FLAGS	+=		-lrdfl

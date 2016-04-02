@@ -15,18 +15,19 @@ typedef			enum {
   RDFL_INPLACE		= (RDFL_NONE + 1) << 1,
   RDFL_TIMEOUT		= (RDFL_NONE + 1) << 2,
   // vvv : will come with consumer feature (ran in a different thread)
-  RDFL_CONSUMER_THREAD	= (RDFL_NONE + 1) << 3,
+  // RDFL_CONSUMER_THREAD	= (RDFL_NONE + 1) << 3,
   RDFL_NO_EXTEND	= (RDFL_NONE + 1) << 4,
-  RDFL_ALL_AVAILABLE	= (RDFL_NONE + 1) << 5,
-  RDFL_THREADSAFE	= (RDFL_NONE + 1) << 6,
-  RDFL_MONITORING	= (RDFL_NONE + 1) << 7,
-  // RDFL_SIGMASK	= (RDFL_NONE + 1) << 8, // Use pselect instead
-  RDFL_FULLEMPTY	= (RDFL_NONE + 1) << 9,
-  // ALLOC is considered activated if ALL_AVAILABLE is
-  RDFL_ALLOC		= (RDFL_NONE + 1) << 10,
-  // CHUNKS is considered activated if IN_PLACE is
-  RDFL_CHUNKS		= (RDFL_NONE + 1) << 11,
-  RDFL_LAST		= (RDFL_NONE + 1) << 12,
+  // Users must not use it on a socket fd, except with monitoring
+  // TODO if monitoring, no timeout (blocking read)
+  RDFL_FORCESIZE	= (RDFL_NONE + 1) << 5,
+  RDFL_ALL_AVAILABLE	= (RDFL_NONE + 1) << 6,
+  RDFL_LEGACY		= (RDFL_NONE + 1) << 7,
+  RDFL_THREADSAFE	= (RDFL_NONE + 1) << 8,
+  RDFL_MONITORING	= (RDFL_NONE + 1) << 9,
+  // RDFL_KEEPTRACK	= (RDFL_NONE + 1) << 10, Keep line/col infos
+  // RDFL_SIGMASK	= (RDFL_NONE + 1) << 11, // Use pselect instead
+  RDFL_FULLEMPTY	= (RDFL_NONE + 1) << 12,
+  RDFL_LAST		= (RDFL_NONE + 1) << 13,
 }			e_rdflsettings;
 
 typedef			struct {
@@ -42,9 +43,10 @@ typedef			struct {
 }			t_rdfl;
 
 typedef	ssize_t		(*readall_handler_t)(t_rdfl *);
-typedef	void		*(*readinpl_handler_t)(t_rdfl *, ssize_t *, size_t consumed);
+typedef	ssize_t		(*readnoextend_handler_t)(t_rdfl *, size_t consume);
 typedef	ssize_t		(*readlegacy_handler_t)(t_rdfl *, void *, size_t);
-typedef void		*(*readalloc_handler_t)(t_rdfl *, ssize_t *);
+typedef	ssize_t		(*readmonitoring_handler_t)(t_rdfl *);
+typedef	ssize_t		(*readsize_handler_t)(t_rdfl *, size_t s);
 
 // API
 //
@@ -57,6 +59,7 @@ void		rdfl_clean(t_rdfl *obj);
 
 void		rdfl_set_timeout(t_rdfl *, ssize_t timeout);
 void		rdfl_set_buffsize(t_rdfl *, ssize_t buffsize);
-void		*rdfl_flush_buffers(t_rdfl *obj, ssize_t *count_value);
+void		*rdfl_flush_buffers_alloc(t_rdfl *obj, ssize_t *count_value);
+void		*rdfl_getinplace_next_chunk(t_rdfl *, size_t *, size_t *);
 
 #endif			/* !__RDFL_H_ */

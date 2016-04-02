@@ -18,7 +18,7 @@ CFLAGS		+=		-fPIC -std=c99
 CFLAGS		+=		-finline-functions
 CFLAGS		+=		-I$(INCDIR)
 CFLAGS		+=		-D_POSIX_C_SOURCE
-CFLAGS		+=		-g3
+## CFLAGS		+=		-g3
 
 $(NOLN_NAME):		$(OBJ)
 	$(CMD_CC) $(OBJ) -shared -o $(NAME) $(LD_FLAGS)
