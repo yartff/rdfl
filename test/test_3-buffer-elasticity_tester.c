@@ -10,7 +10,8 @@ test_3(void) {
 
   rdfl_init(&example);
   rdfl_set_buffsize(&example, 60);
-  rdfl_read = rdfl_load_path(&example, "/etc/passwd", RDFL_NO_EXTEND);
+  if (!(rdfl_read = rdfl_load_path(&example, "/etc/passwd", RDFL_NO_EXTEND, NULL)))
+    return (EXIT_FAILURE);
 
   rdfl_clean(&example);
   return (EXIT_SUCCESS);
