@@ -65,13 +65,13 @@ _read_size(t_rdfl *obj, size_t count) {
 
   while (count) {
     if (!(ptr = rdfl_b_buffer_getchunk_extend(&obj->data, &available, obj->v.buffsize)))
-      return (-1);
+      return (ERR_MEMORY);
     if (available > count) available = count;
-    if ((s = rdfl_b_push_read(&obj->data, obj->fd, ptr, available)) == -1)
-      return (-1);
+    if ((s = rdfl_b_push_read(&obj->data, obj->fd, ptr, available)) < 0)
+      return (s);
     count -= (size_t)s;
   }
-  return (0);
+  return (ERR_NONE);
 }
 
 static
@@ -84,9 +84,9 @@ _read_all_available(t_rdfl *obj) {
   // TODO monitoring
   while (full) {
     if (!(ptr = rdfl_b_buffer_getchunk_extend(&obj->data, &available, obj->v.buffsize)))
-      return (-1);
-    if ((full = rdfl_b_push_read(&obj->data, obj->fd, ptr, available)) == -1)
-      return (-1);
+      return (ERR_MEMORY);
+    if ((full = rdfl_b_push_read(&obj->data, obj->fd, ptr, available)) < 0)
+      return (full);
     total += full;
     full = ((size_t)full == available);
   }
@@ -102,10 +102,10 @@ _read_noextend(t_rdfl *obj, size_t consume) {
 
   rdfl_b_consume_size(&obj->data, consume);
   ptr = rdfl_b_buffer_getchunk(&obj->data, &s);
-  if (!s) return (0); // TODO NO SPACE
-  if ((ret = rdfl_b_push_read(&obj->data, obj->fd, ptr, s)) == -1)
-    return (-1);
-  rdfl_b_buffer_getchunk(&obj->data, &s);
+  if (!s) return (ERR_NOSPACELEFT);
+  if ((ret = rdfl_b_push_read(&obj->data, obj->fd, ptr, s)) < 0) {
+    return (ret);
+  }
   return (ret);
   // TODO read more if available
 }
@@ -184,35 +184,44 @@ _check_func(e_rdflsettings settings) {
 }
 
 void *
-rdfl_load(t_rdfl *new, int fd, e_rdflsettings settings) {
-  if (_check_settings(settings) == EXIT_FAILURE)
+rdfl_load(t_rdfl *new, int fd, e_rdflsettings settings, e_rdflerrors *err) {
+  if (_check_settings(settings) == EXIT_FAILURE) {
+    if (err) *err = ERR_BADFLAGS;
     return (NULL);
+  }
   new->fd = fd;
   new->settings = settings;
   if (rdfl_buffer_init(&(new->data),
 	(RDFL_OPT_ISSET(settings, RDFL_FULLEMPTY) ?
-	 0 : new->v.buffsize)) == EXIT_FAILURE)
+	 0 : new->v.buffsize)) == EXIT_FAILURE) {
+    if (err) *err = ERR_MEMORY;
     return (NULL);
+  }
+  if (err) *err = ERR_NONE;
   return (_check_func(settings));
 }
 
 void *
-rdfl_load_fileptr(t_rdfl *new, FILE *stream, e_rdflsettings settings) {
+rdfl_load_fileptr(t_rdfl *new, FILE *stream, e_rdflsettings settings, e_rdflerrors *err) {
   int		fd_type;
 
-  if ((fd_type = fileno(stream)) == -1)
+  if ((fd_type = fileno(stream)) == -1) {
+    if (err) *err = ERR_BADF;
     return (NULL);
-  return (rdfl_load(new, fd_type, settings));
+  }
+  return (rdfl_load(new, fd_type, settings, err));
 }
 
 void *
-rdfl_load_path(t_rdfl *new, const char *path, e_rdflsettings settings) {
+rdfl_load_path(t_rdfl *new, const char *path, e_rdflsettings settings, e_rdflerrors *err) {
   int		fd;
 
-  if ((fd = open(path, O_RDONLY)) == - 1)
+  if ((fd = open(path, O_RDONLY)) == - 1) {
+    if (err) *err = ERR_OPEN;
     return (NULL);
+  }
   RDFL_OPT_SET(settings, RDFL_LOC_OPEN);
-  return (rdfl_load(new, fd, settings));
+  return (rdfl_load(new, fd, settings, err));
 }
 
 void *

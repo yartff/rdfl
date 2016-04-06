@@ -8,6 +8,7 @@ int	(*test_functions[])(void) = {
 };
 
 // TODO test_4-modeswitching_tester.c
+// TODO test_5-errorcases_tester.c
 int
 main(void) {
   unsigned int	i = 0;

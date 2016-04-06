@@ -1,7 +1,6 @@
 #include	<unistd.h>
 #include	<sys/select.h>
 #include	<limits.h>
-#include	<stdio.h>
 #include	<string.h>
 #include	<stdlib.h>
 #include	"rdfl_buffer.h"
@@ -54,6 +53,19 @@ rdfl_b_del_restat(t_rdfl_buffer *b) {
     b->consumer.l_total = 0;
     b->buffer.ndx = 0;
   }
+}
+
+static
+void
+rdfl_b_del_restat_butfirst(t_rdfl_buffer *b) {
+  if (b->consumer.raw->next) {
+    rdfl_b_del_restat(b);
+    return ;
+  }
+  b->consumer.ndx = 0;
+  b->consumer.total = 0;
+  b->consumer.l_total = 0;
+  b->buffer.ndx = 0;
 }
 
 // Assumes there's one unique raw with data ranged from 0 to buffer.ndx
@@ -167,7 +179,7 @@ rdfl_b_consume_size(t_rdfl_buffer *b, size_t value) {
   while (value) {
     if (value >= b->consumer.l_total) {
       value -= b->consumer.l_total;
-      rdfl_b_del_restat(b);
+      rdfl_b_del_restat_butfirst(b);
     }
     else {
       b->consumer.l_total -= value;
@@ -199,7 +211,7 @@ rdfl_b_consume_all_alloc(t_rdfl_buffer *b, ssize_t *count_value) {
   if (count_value) *count_value = b->consumer.total;
   if (!b->consumer.total) return (NULL);
   if (!(ptr = malloc(b->consumer.total))) {
-    if (count_value) *count_value = -1;
+    if (count_value) *count_value = ERR_MEMORY;
     return (NULL);
   }
   while (b->consumer.total) {
@@ -217,7 +229,7 @@ rdfl_b_consume_firstbuffer_alloc(t_rdfl_buffer *b, ssize_t *count_value) {
   if (count_value) *count_value = b->consumer.l_total;
   if (!b->consumer.l_total) return (NULL);
   if (!(ptr = malloc(b->consumer.l_total))) {
-    if (count_value) *count_value = -1;
+    if (count_value) *count_value = ERR_MEMORY;
     return (NULL);
   }
   raw_tmp = b->consumer.raw;
@@ -266,17 +278,12 @@ ssize_t
 rdfl_b_push_read(t_rdfl_buffer *b, int fd, void *ptr, size_t s) {
   ssize_t	nb;
 
-  /*
-     printf("c:%zu _ b:%zu\n", b->consumer.ndx, b->buffer.ndx);
-     fflush(stdout);
-     getchar();
-     */
   if (s > SSIZE_MAX)
-    return (-1);
+    return (ERR_SIZETOOBIG);
   if ((nb = read(fd, ptr, s)) == -1) {
     // TODO read must check for following errors:
     // EAGAIN E_WOULDBLOCK
-    return (-1);
+    return (ERR_READ);
   }
   rdfl_b_buffer_size(b, (size_t)nb);
   return (nb);
@@ -285,8 +292,49 @@ rdfl_b_push_read(t_rdfl_buffer *b, int fd, void *ptr, size_t s) {
 
 // Debugging
 //
-//
+static
+void
+print_chars(char c, size_t count) {
+  while (count--) {
+    write(1, &c, 1);
+  }
+}
+
+// TODO handle '\n' and unprintable characters for a proper debug
+// TODO display size of each buffer
 void
 rdfl_b_print_buffers(t_rdfl_buffer *b) {
-  (void)b;
+  t_rdfl_b_list		*raw = b->consumer.raw;
+  size_t		tmp;
+
+  write(1, "{", 1);
+  while (raw) {
+    if (raw == b->consumer.raw) {
+      write(1, "[", 1);
+      if (b->consumer.ndx + b->consumer.l_total > raw->size) {
+	//print_chars('.', (tmp = (b->consumer.l_total - (raw->size - b->consumer.ndx))));
+	write(1, raw->data, (tmp = (b->consumer.l_total - (raw->size - b->consumer.ndx))));
+	print_chars('?', b->consumer.ndx - tmp);
+	write(1, raw->data + b->consumer.ndx, raw->size - b->consumer.ndx);
+      }
+      else {
+	print_chars('?', b->consumer.ndx);
+	write(1, raw->data + b->consumer.ndx, b->consumer.l_total);
+	print_chars('?', b->consumer.raw->size - b->consumer.l_total - b->consumer.ndx);
+      }
+    }
+    else {
+      write(1, "\n[", 2);
+      if (raw == b->buffer.raw) {
+	write(1, raw->data, b->buffer.ndx);
+	print_chars('?', raw->size - b->buffer.ndx);
+      }
+      else {
+	write(1, raw->data, raw->size);
+      }
+    }
+    write(1, "]", 2);
+    raw = raw->next;
+  }
+  write(1, "}\n", 2);
 }

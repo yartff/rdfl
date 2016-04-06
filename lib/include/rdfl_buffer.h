@@ -44,4 +44,6 @@ void		rdfl_b_consume_size(t_rdfl_buffer *, size_t);
 void		*rdfl_b_consume_firstbuffer_alloc(t_rdfl_buffer *, ssize_t *);
 void		*rdfl_b_consume_all_alloc(t_rdfl_buffer *b, ssize_t *count_value);
 
+void		rdfl_b_print_buffers(t_rdfl_buffer *);
+
 #endif			/* !__RDFL_BUFFER_H_ */

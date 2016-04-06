@@ -30,6 +30,17 @@ typedef			enum {
   RDFL_LAST		= (RDFL_NONE + 1) << 13,
 }			e_rdflsettings;
 
+typedef			enum {
+  ERR_NONE		= 0,
+  ERR_SIZETOOBIG	= -1,
+  ERR_READ		= -2,
+  ERR_MEMORY		= -3,
+  ERR_BADF		= -4,
+  ERR_BADFLAGS		= -5,
+  ERR_NOSPACELEFT	= -6,
+  ERR_OPEN		= -7,
+}			e_rdflerrors;
+
 typedef			struct {
   ssize_t		timeout;
   ssize_t		buffsize;
@@ -50,10 +61,16 @@ typedef	ssize_t		(*readsize_handler_t)(t_rdfl *, size_t s);
 
 // API
 //
+
+// Init data
 void		rdfl_init(t_rdfl *);
-void		*rdfl_load(t_rdfl *, int fd, e_rdflsettings);
-void		*rdfl_load_fileptr(t_rdfl *, FILE *file_ptr, e_rdflsettings);
-void		*rdfl_load_path(t_rdfl *, const char *path, e_rdflsettings);
+t_rdfl		*rdfl_init_new(void);
+
+// Launch the stream
+void		*rdfl_load(t_rdfl *, int fd, e_rdflsettings, e_rdflerrors *);
+void		*rdfl_load_fileptr(t_rdfl *, FILE *file_ptr, e_rdflsettings, e_rdflerrors *);
+void		*rdfl_load_path(t_rdfl *, const char *path, e_rdflsettings, e_rdflerrors *);
+
 const char	*handler_typedef_declare(void *ptr);
 void		rdfl_clean(t_rdfl *obj);
 

@@ -12,17 +12,16 @@ test_1(void) {
   readall_handler_t	rdfl_read;
   rdfl_set_timeout(&example, -1);
   rdfl_set_buffsize(&example, 200);
-  rdfl_read = rdfl_load_path(&example, "/etc/passwd", RDFL_ALL_AVAILABLE);
-  if ((s = rdfl_read(&example)) == -1) {
+  if (!(rdfl_read = rdfl_load_path(&example, "/etc/passwd", RDFL_ALL_AVAILABLE, NULL)))
+    return (EXIT_FAILURE);
+  if ((s = rdfl_read(&example)) < 0) {
     rdfl_clean(&example);
     return (EXIT_FAILURE);
   }
-
   ptr = rdfl_flush_buffers_alloc(&example, &s);
   rdfl_clean(&example);
-  write(1, "TEST1:\n", sizeof("TEST1:\n") - 1);
+
   write(1, ptr, s);
-  write(1, "END TEST1:\n", sizeof("END TEST1:\n") - 1);
   free(ptr);
   return (EXIT_SUCCESS);
 }
