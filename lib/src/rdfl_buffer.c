@@ -296,8 +296,25 @@ static
 void
 print_chars(char c, size_t count) {
   while (count--) {
-    write(1, &c, 1);
+    printf("%c", c);
   }
+}
+
+static
+void
+print_buffer(const char *str, size_t count) {
+  size_t	i = 0;
+  printf("\033[0;34m");
+  while (i < count) {
+    if (RDFL_IS_ASCII_PRINTABLECHAR(str[i])) {
+      printf("%c",  str[i]);
+    }
+    else {
+      printf("\033[1;32m%c\033[0;34m", RDFL_IS_ASCII_NODISPLAYCHAR(str[i]) ? '.' : '?');
+    }
+    ++i;
+  }
+  printf("\033[0m");
 }
 
 // TODO handle '\n' and unprintable characters for a proper debug
@@ -307,34 +324,38 @@ rdfl_b_print_buffers(t_rdfl_buffer *b) {
   t_rdfl_b_list		*raw = b->consumer.raw;
   size_t		tmp;
 
-  write(1, "{", 1);
+  printf("TOT: %zu (First TOT: %zu/%zu) \n\033[1;31m{\033[0m", b->consumer.total,
+      b->consumer.l_total, b->consumer.raw->size);
   while (raw) {
     if (raw == b->consumer.raw) {
-      write(1, "[", 1);
+      printf("\033[1;31m[\033[0m");
       if (b->consumer.ndx + b->consumer.l_total > raw->size) {
 	//print_chars('.', (tmp = (b->consumer.l_total - (raw->size - b->consumer.ndx))));
-	write(1, raw->data, (tmp = (b->consumer.l_total - (raw->size - b->consumer.ndx))));
-	print_chars('?', b->consumer.ndx - tmp);
-	write(1, raw->data + b->consumer.ndx, raw->size - b->consumer.ndx);
+	print_buffer(raw->data, (tmp = (b->consumer.l_total - (raw->size - b->consumer.ndx))));
+	print_chars('_', b->consumer.ndx - tmp);
+	print_buffer(raw->data + b->consumer.ndx, raw->size - b->consumer.ndx);
       }
       else {
-	print_chars('?', b->consumer.ndx);
-	write(1, raw->data + b->consumer.ndx, b->consumer.l_total);
-	print_chars('?', b->consumer.raw->size - b->consumer.l_total - b->consumer.ndx);
+	print_chars('_', b->consumer.ndx);
+	print_buffer(raw->data + b->consumer.ndx, b->consumer.l_total);
+	print_chars('_', b->consumer.raw->size - b->consumer.l_total - b->consumer.ndx);
       }
     }
     else {
-      write(1, "\n[", 2);
+      printf("\n \033[1;31m[\033[0m");
       if (raw == b->buffer.raw) {
-	write(1, raw->data, b->buffer.ndx);
-	print_chars('?', raw->size - b->buffer.ndx);
+	print_buffer(raw->data, b->buffer.ndx);
+	print_chars('_', raw->size - b->buffer.ndx);
+	printf("\033[1;31m}\033[0m\n""Last buffer: (%zu/%zu, %zu Bytes free space)\n",
+	    b->buffer.ndx, raw->size, raw->size - b->buffer.ndx);
+	return ;
       }
       else {
-	write(1, raw->data, raw->size);
+	print_buffer(raw->data, raw->size);
       }
     }
-    write(1, "]", 2);
+    printf("\033[1;31m]\033[0m");
     raw = raw->next;
   }
-  write(1, "}\n", 2);
+  printf("\033[1;31m}\033[0m\n");
 }

@@ -1,6 +1,9 @@
 #ifndef			__RDFL_BUFFER_H_
 # define		__RDFL_BUFFER_H_
 
+# define	RDFL_IS_ASCII_PRINTABLECHAR(c) ((c) >= ' ' && (c) <= '~')
+# define	RDFL_IS_ASCII_NODISPLAYCHAR(c) (((c) == '\n') || ((c) == '\t'))
+
 typedef struct		s_rdfl_b_list {
   void			*data;
   size_t		size;
