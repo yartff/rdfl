@@ -5,6 +5,7 @@
 int	(*test_functions[])(void) = {
   &test_1,
   &test_2,
+  &test_3,
 };
 
 // TODO test_4-modeswitching_tester.c

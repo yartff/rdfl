@@ -54,6 +54,11 @@ rdfl_getinplace_next_chunk(t_rdfl *obj, size_t *s, size_t *total_s) {
   return (ptr);
 }
 
+void
+rdfl_force_consume_size(t_rdfl *obj, size_t s) {
+  rdfl_b_consume_size(&obj->data, s);
+}
+
 // API Readers
 //
 static
@@ -64,7 +69,9 @@ _read_size(t_rdfl *obj, size_t count) {
   size_t	available;
 
   while (count) {
-    if (!(ptr = rdfl_b_buffer_getchunk_extend(&obj->data, &available, obj->v.buffsize)))
+    if (!(ptr = rdfl_b_buffer_getchunk_extend(&obj->data, &available,
+	    (RDFL_OPT_ISSET(obj->settings, RDFL_ADJUST_BUFFSIZE)
+	     ? count : obj->v.buffsize))))
       return (ERR_MEMORY);
     if (available > count) available = count;
     if ((s = rdfl_b_push_read(&obj->data, obj->fd, ptr, available)) < 0)
@@ -172,7 +179,7 @@ _check_settings(e_rdflsettings settings) {
 static
 void *
 _check_func(e_rdflsettings settings) {
-  if (RDFL_OPT_ISSET(settings, RDFL_FORCESIZE))
+  if (RDFL_OPT_ISSET(settings, RDFL_FORCEREADSIZE))
     return (&_read_size);
   if (RDFL_OPT_ISSET(settings, RDFL_MONITORING))
     return (&_read_monitoring);
@@ -192,7 +199,8 @@ rdfl_load(t_rdfl *new, int fd, e_rdflsettings settings, e_rdflerrors *err) {
   new->fd = fd;
   new->settings = settings;
   if (rdfl_buffer_init(&(new->data),
-	(RDFL_OPT_ISSET(settings, RDFL_FULLEMPTY) ?
+	((RDFL_OPT_ISSET(settings, RDFL_ADJUST_BUFFSIZE)
+	  || RDFL_OPT_ISSET(settings, RDFL_FULLEMPTY)) ?
 	 0 : new->v.buffsize)) == EXIT_FAILURE) {
     if (err) *err = ERR_MEMORY;
     return (NULL);
@@ -252,6 +260,11 @@ handler_typedef_declare(void *ptr) {
     ++i;
   }
   return (NULL);
+}
+
+void
+rdfl_printbufferstate(t_rdfl *obj) {
+  rdfl_b_print_buffers(&obj->data);
 }
 
 // Opt setters

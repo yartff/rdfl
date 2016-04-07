@@ -10,10 +10,10 @@ test_2(void) {
   ssize_t			ret;
 
   rdfl_init(&example);
-  rdfl_set_buffsize(&example, 100);
+  rdfl_set_buffsize(&example, 94);
   if (!(rdfl_read = rdfl_load_path(&example, "/etc/passwd", RDFL_NO_EXTEND, NULL)))
     return (EXIT_FAILURE);
-  srand(time(NULL));
+  // srand(time(NULL));
 
   for (;;) {
     if ((ret = rdfl_read(&example, consume)) < 0 && ret != ERR_NOSPACELEFT) {

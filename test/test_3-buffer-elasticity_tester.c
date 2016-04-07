@@ -4,14 +4,24 @@
 int
 test_3(void) {
   t_rdfl			example;
-  void				*ptr;
-  size_t			s, total, consume = 0;
-  readnoextend_handler_t	rdfl_read;
+  size_t			i = 0;
+  readsize_handler_t		rdfl_read;
+  int				tab[] = {
+    50, -10, 30, -10, 200, -45,
+  };
 
   rdfl_init(&example);
-  rdfl_set_buffsize(&example, 60);
-  if (!(rdfl_read = rdfl_load_path(&example, "/etc/passwd", RDFL_NO_EXTEND, NULL)))
+  rdfl_set_buffsize(&example, 64);
+  if (!(rdfl_read = rdfl_load_path(&example, "/etc/passwd", RDFL_FORCEREADSIZE, NULL)))
     return (EXIT_FAILURE);
+  while (i < (sizeof(tab) / sizeof(*tab))) {
+    if (tab[i] < 0)
+      rdfl_force_consume_size(&example, -(tab[i]));
+    else if (tab[i] > 0)
+      rdfl_read(&example, tab[i]);
+    rdfl_printbufferstate(&example);
+    ++i;
+  }
 
   rdfl_clean(&example);
   return (EXIT_SUCCESS);

@@ -7,7 +7,8 @@ CMD_RM		=		@rm -rfv
 
 SRC		=		main_test.c				\
 				test_1-allavailable_reader.c		\
-				test_2-inplace_reader.c
+				test_2-inplace_reader.c			\
+				test_3-buffer-elasticity_tester.c
 
 OBJ		=		$(SRC:.c=.o)
 
