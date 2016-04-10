@@ -10,7 +10,7 @@ test_4__monitoring_reader(void) {
   rdfl_init(&example);
   rdfl_set_timeout(&example, 5000000);
   if (!(rdfl_read = rdfl_load_connect(&example, "127.0.0.1", 3232,
-	  RDFL_MONITORING | RDFL_ALL_AVAILABLE, NULL)))
+	  RDFL_MONITORING | RDFL_NO_EXTEND | RDFL_FILLFREESPACE, NULL)))
     return (EXIT_FAILURE);
   printf("Size: %zu\n", rdfl_read(&example, &err));
   printf("ERR: %i\n", err);

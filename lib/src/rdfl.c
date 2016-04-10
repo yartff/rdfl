@@ -10,7 +10,7 @@
 
 static
 size_t
-rdfl_monitore_into_chunk_extend(t_rdfl *obj, e_rdflerrors *err) {
+rdfl_read_into_chunk_extend(t_rdfl *obj, e_rdflerrors *err) {
   void		*ptr;
   size_t	s;
   ssize_t	ret;
@@ -23,13 +23,16 @@ rdfl_monitore_into_chunk_extend(t_rdfl *obj, e_rdflerrors *err) {
     if (err != NULL) *err = ret;
     return (0);
   }
-  if (ret == 0 && err != NULL) *err = ERR_CONNECTION_CLOSED;
+  if (err) {
+    if (ret == 0) *err = ERR_CONNECTION_CLOSED;
+    if ((size_t)ret == s) *err = VAL_POTENTIALDATA;
+  }
   return (ret);
 }
 
 static
 size_t
-rdfl_monitore_into_chunk(t_rdfl *obj, e_rdflerrors *err) {
+rdfl_read_into_chunk(t_rdfl *obj, e_rdflerrors *err) {
   void		*ptr;
   size_t	s;
   ssize_t	ret;
@@ -43,8 +46,54 @@ rdfl_monitore_into_chunk(t_rdfl *obj, e_rdflerrors *err) {
     if (err != NULL) *err = ret;
     return (0);
   }
-  if (ret == 0 && err != NULL) *err = ERR_CONNECTION_CLOSED;
+  if (err) {
+    if (ret == 0) *err = ERR_CONNECTION_CLOSED;
+    if ((size_t)ret == s) *err = VAL_POTENTIALDATA;
+  }
   return (ret);
+}
+
+static
+size_t
+rdfl_monitoring_read(t_rdfl *obj, t_rdfl_net *nw, e_rdflerrors *err) {
+  size_t	(*fct)(t_rdfl *, e_rdflerrors *);
+  int		nw_ret;
+  size_t	total;
+  e_rdflerrors	localerr = ERR_NONE;
+
+  fct = (RDFL_OPT_ISSET(obj->settings, RDFL_NO_EXTEND)
+      ? &rdfl_read_into_chunk
+      : &rdfl_read_into_chunk_extend);
+
+
+  if ((nw_ret = rdfl_nw_monitoring(nw)) > 0) {
+    total = fct(obj, &localerr);
+    if (localerr == VAL_POTENTIALDATA) {
+      if (RDFL_OPT_ISSET(obj->settings, RDFL_FILLFREESPACE)) {
+	if ((nw_ret = rdfl_nw_monitoring(nw)) > 0) {
+	  total += fct(obj, err);
+	} else if (err) *err = nw_ret;
+      }
+    } else if (localerr != ERR_NONE && err) *err = localerr;
+  } else if (err) *err = nw_ret;
+  return (total);
+}
+
+static
+size_t
+rdfl_monitoring_allavail(t_rdfl *obj, t_rdfl_net *nw, e_rdflerrors *err) {
+  size_t	total = 0, ret;
+  int		nw_ret;
+
+  while ((nw_ret = rdfl_nw_monitoring(nw)) > 0) {
+    if ((ret = rdfl_read_into_chunk_extend(obj, err)) == 0) {
+      if (err) *err = ERR_CONNECTION_CLOSED;
+      return (total);
+    }
+    total += ret;
+  }
+  if (nw_ret != 0 && err) *err = nw_ret;
+  return (total);
 }
 
 
@@ -146,7 +195,7 @@ _read_all_available(t_rdfl *obj) {
 static
 size_t
 _read_noextend(t_rdfl *obj, size_t consume, e_rdflerrors *err) {
-  size_t	s, total = 0;
+  size_t	s, total;
   ssize_t	ret;
   void		*ptr;
 
@@ -180,27 +229,18 @@ static
 size_t
 _read_monitoring(t_rdfl *obj, e_rdflerrors *err) {
   t_rdfl_net	nw;
-  size_t	total = 0, ret;
+  size_t	total;
   int		nw_ret;
-  size_t	(*fct)(t_rdfl *, e_rdflerrors *);
 
   if (err) *err = ERR_NONE;
-  fct = (RDFL_OPT_ISSET(obj->settings, RDFL_NO_EXTEND)
-      ? &rdfl_monitore_into_chunk : &rdfl_monitore_into_chunk_extend);
   if ((nw_ret = rdfl_nw_init(&nw, obj->fd, obj->v.timeout)) < 0) {
     if (err) *err = nw_ret;
     return (0);
   }
-  if (RDFL_OPT_ISSET(obj->settings, RDFL_ALL_AVAILABLE)) {
-    while ((nw_ret = rdfl_nw_monitoring(&nw)) > 0) {
-      if ((ret = fct(obj, err)) == 0) goto endloop;
-      total += ret;
-    }
-    if (nw_ret != 0 && err) *err = nw_ret;
-  }
-  else if ((nw_ret = rdfl_nw_monitoring(&nw)) > 0)
-    total = fct(obj, err);
-endloop:
+  if (RDFL_OPT_ISSET(obj->settings, RDFL_ALL_AVAILABLE))
+    total = rdfl_monitoring_allavail(obj, &nw, err);
+  else
+    total = rdfl_monitoring_read(obj, &nw, err);
   rdfl_nw_clean(&nw);
   return (total);
 }
@@ -259,7 +299,9 @@ _check_func(e_rdflsettings settings) {
     return (&_read_noextend);
   if (RDFL_OPT_ISSET(settings, RDFL_ALL_AVAILABLE))
     return (&_read_all_available);
-  return (&_read_legacy);
+  if (RDFL_OPT_ISSET(settings, RDFL_LEGACY))
+    return (&_read_legacy);
+  return (&_read_legacy); // TODO single read normal func
 }
 
 void *

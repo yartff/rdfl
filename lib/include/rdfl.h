@@ -46,7 +46,8 @@ typedef			enum {
   ERR_OPEN		= -8,
   ERR_NOT_IMPLEMENTED	= -9,
   ERR_CONNECTION	= -10,
-  ERR_CONNECTION_CLOSED	= -11
+  ERR_CONNECTION_CLOSED	= -11,
+  VAL_POTENTIALDATA	= -12
 }			e_rdflerrors;
 
 typedef			struct {
