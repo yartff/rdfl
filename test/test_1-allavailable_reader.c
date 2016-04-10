@@ -2,7 +2,7 @@
 #include	"rdfl.h"
 
 int
-test_1(void) {
+test_1__allavailable_reader(void) {
   t_rdfl	example;
   ssize_t	s;
   void		*ptr;

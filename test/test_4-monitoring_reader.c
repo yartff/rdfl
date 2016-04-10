@@ -2,7 +2,7 @@
 #include	"rdfl.h"
 
 int
-test_4(void) {
+test_4__monitoring_reader(void) {
   t_rdfl	example;
   readmonitoring_handler_t	rdfl_read;
   e_rdflerrors	err;

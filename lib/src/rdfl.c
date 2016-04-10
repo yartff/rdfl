@@ -144,20 +144,29 @@ _read_all_available(t_rdfl *obj) {
 }
 
 static
-ssize_t
-_read_noextend(t_rdfl *obj, size_t consume) {
-  size_t	s;
+size_t
+_read_noextend(t_rdfl *obj, size_t consume, e_rdflerrors *err) {
+  size_t	s, total = 0;
   ssize_t	ret;
   void		*ptr;
 
   rdfl_b_consume_size(&obj->data, consume);
   ptr = rdfl_b_buffer_getchunk(&obj->data, &s);
-  if (!s) return (ERR_NOSPACELEFT);
+  if (!s) { if (err) *err = ERR_NOSPACELEFT; return (0); }
   if ((ret = rdfl_b_push_read(&obj->data, obj->fd, ptr, s)) < 0) {
-    return (ret);
+    if (err) *err = ret;
+    return (0);
   }
-  return (ret);
-  // TODO read more if available
+  total = (size_t)ret;
+  if (RDFL_OPT_ISSET(obj->settings, RDFL_FILLFREESPACE) && total == s) {
+    ptr = rdfl_b_buffer_getchunk(&obj->data, &s);
+    if (!s) return ((size_t)ret);
+    if ((ret = rdfl_b_push_read(&obj->data, obj->fd, ptr, s)) < 0) {
+      if (err) *err = ret;
+      return (total);
+    }
+  }
+  return ((size_t)ret + total);
 }
 
 static
@@ -214,9 +223,11 @@ static
 int
 _check_settings(e_rdflsettings settings) {
   if (RDFL_OPT_ISSET(settings, RDFL_ALL_AVAILABLE)
-      && (RDFL_OPT_ISSET(settings, RDFL_NO_EXTEND))) {
+      && (RDFL_OPT_ISSET(settings, RDFL_NO_EXTEND)
+	|| RDFL_OPT_ISSET(settings, RDFL_FILLFREESPACE))) {
     return (EXIT_FAILURE);
   } // Cannot read ALL_AVAILABLE with constraints from NO_EXTEND
+  // Illogic to FILLFREESPACE when already reading ALL_AVAILABLE data
   if (RDFL_OPT_ISSET(settings, RDFL_TIMEOUT)
       && !RDFL_OPT_ISSET(settings, RDFL_MONITORING)) {
     return (EXIT_FAILURE);
@@ -233,7 +244,7 @@ _check_settings(e_rdflsettings settings) {
   if (RDFL_OPT_ISSET(settings, RDFL_ADJUST_BUFFSIZE)
       && !RDFL_OPT_ISSET(settings, RDFL_FORCEREADSIZE)) {
     return (EXIT_FAILURE);
-  }
+  } // can ADJUST_BUFFSIZE only if it knows what you need from FORCEREADSIZE
   return (EXIT_SUCCESS);
 }
 

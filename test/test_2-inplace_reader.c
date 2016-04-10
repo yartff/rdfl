@@ -2,7 +2,7 @@
 #include	"rdfl.h"
 
 int
-test_2(void) {
+test_2__inplace_reader(void) {
   t_rdfl			example;
   void				*ptr;
   size_t			s, total, consume = 0;

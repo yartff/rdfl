@@ -2,7 +2,7 @@
 #include	"rdfl.h"
 
 int
-test_3(void) {
+test_3__bufferelasticity_tester(void) {
   t_rdfl			example;
   size_t			i = 0;
   readsize_handler_t		rdfl_read;

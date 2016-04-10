@@ -3,10 +3,10 @@
 #include	"tester.h"
 
 int	(*test_functions[])(void) = {
-  //&test_1,
-  //&test_2,
-  //&test_3,
-  &test_4,
+  &test_1__allavailable_reader,
+  &test_2__inplace_reader,
+  &test_3__bufferelasticity_tester,
+  &test_4__monitoring_reader,
 };
 
 // TODO test_5-errorcases_tester.c

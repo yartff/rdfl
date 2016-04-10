@@ -17,20 +17,21 @@ typedef			enum {
   // vvv : will come with consumer feature (ran in a different thread)
   // RDFL_CONSUMER_THREAD	= (RDFL_NONE + 1) << 3,
   RDFL_NO_EXTEND	= (RDFL_NONE + 1) << 4,
+  RDFL_FILLFREESPACE	= (RDFL_NONE + 1) << 5,
   // Users must not use it on a socket fd, except with monitoring
   // TODO if monitoring, no timeout (blocking read)
-  RDFL_FORCEREADSIZE	= (RDFL_NONE + 1) << 5,
+  RDFL_FORCEREADSIZE	= (RDFL_NONE + 1) << 6,
   // Ignored if ALL_AVAILABLE or NO_EXTEND or LEGACY
-  RDFL_ADJUST_BUFFSIZE	= (RDFL_NONE + 1) << 6,
-  RDFL_ALL_AVAILABLE	= (RDFL_NONE + 1) << 7,
-  RDFL_LEGACY		= (RDFL_NONE + 1) << 8,
-  RDFL_THREADSAFE	= (RDFL_NONE + 1) << 9,
-  RDFL_MONITORING	= (RDFL_NONE + 1) << 10,
-  // RDFL_KEEPTRACK	= (RDFL_NONE + 1) << 11, Keep line/col infos
-  // RDFL_SIGMASK	= (RDFL_NONE + 1) << 12, // Use pselect instead
-  RDFL_FULLEMPTY	= (RDFL_NONE + 1) << 13,
-  // RDFL_COMPLETETIMEOUT	= (RDFL_NONE + 1) << 14
-  RDFL_LAST		= (RDFL_NONE + 1) << 15,
+  RDFL_ADJUST_BUFFSIZE	= (RDFL_NONE + 1) << 7,
+  RDFL_ALL_AVAILABLE	= (RDFL_NONE + 1) << 8,
+  RDFL_LEGACY		= (RDFL_NONE + 1) << 9,
+  RDFL_THREADSAFE	= (RDFL_NONE + 1) << 10,
+  RDFL_MONITORING	= (RDFL_NONE + 1) << 11,
+  // RDFL_KEEPTRACK	= (RDFL_NONE + 1) << 12, Keep line/col infos
+  // RDFL_SIGMASK	= (RDFL_NONE + 1) << 13, // Use pselect instead
+  RDFL_FULLEMPTY	= (RDFL_NONE + 1) << 14,
+  // RDFL_COMPLETETIMEOUT	= (RDFL_NONE + 1) << 15
+  RDFL_LAST		= (RDFL_NONE + 1) << 16,
 }			e_rdflsettings;
 
 typedef			enum {
