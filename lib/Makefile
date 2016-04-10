@@ -10,6 +10,7 @@ CMD_RM		=		@rm -rfv
 SRC		=		\
 				$(SRCDIR)rdfl.c				\
 				$(SRCDIR)rdfl_buffer.c			\
+				$(SRCDIR)rdfl_network.c			\
 
 OBJ		=		$(SRC:.c=.o)
 

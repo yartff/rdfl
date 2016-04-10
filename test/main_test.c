@@ -3,12 +3,12 @@
 #include	"tester.h"
 
 int	(*test_functions[])(void) = {
-  &test_1,
-  &test_2,
-  &test_3,
+  //&test_1,
+  //&test_2,
+  //&test_3,
+  &test_4,
 };
 
-// TODO test_4-modeswitching_tester.c
 // TODO test_5-errorcases_tester.c
 int
 main(void) {

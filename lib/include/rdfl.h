@@ -29,7 +29,8 @@ typedef			enum {
   // RDFL_KEEPTRACK	= (RDFL_NONE + 1) << 11, Keep line/col infos
   // RDFL_SIGMASK	= (RDFL_NONE + 1) << 12, // Use pselect instead
   RDFL_FULLEMPTY	= (RDFL_NONE + 1) << 13,
-  RDFL_LAST		= (RDFL_NONE + 1) << 14,
+  // RDFL_COMPLETETIMEOUT	= (RDFL_NONE + 1) << 14
+  RDFL_LAST		= (RDFL_NONE + 1) << 15,
 }			e_rdflsettings;
 
 typedef			enum {
@@ -40,7 +41,11 @@ typedef			enum {
   ERR_BADF		= -4,
   ERR_BADFLAGS		= -5,
   ERR_NOSPACELEFT	= -6,
-  ERR_OPEN		= -7,
+  ERR_SELECT		= -7,
+  ERR_OPEN		= -8,
+  ERR_NOT_IMPLEMENTED	= -9,
+  ERR_CONNECTION	= -10,
+  ERR_CONNECTION_CLOSED	= -11
 }			e_rdflerrors;
 
 typedef			struct {
@@ -58,7 +63,7 @@ typedef			struct {
 typedef	ssize_t		(*readall_handler_t)(t_rdfl *);
 typedef	ssize_t		(*readnoextend_handler_t)(t_rdfl *, size_t consume);
 typedef	ssize_t		(*readlegacy_handler_t)(t_rdfl *, void *, size_t);
-typedef	ssize_t		(*readmonitoring_handler_t)(t_rdfl *);
+typedef	size_t		(*readmonitoring_handler_t)(t_rdfl *, e_rdflerrors *);
 typedef	ssize_t		(*readsize_handler_t)(t_rdfl *, size_t s);
 
 // API
@@ -72,6 +77,7 @@ t_rdfl		*rdfl_init_new(void);
 void		*rdfl_load(t_rdfl *, int fd, e_rdflsettings, e_rdflerrors *);
 void		*rdfl_load_fileptr(t_rdfl *, FILE *file_ptr, e_rdflsettings, e_rdflerrors *);
 void		*rdfl_load_path(t_rdfl *, const char *path, e_rdflsettings, e_rdflerrors *);
+void		*rdfl_load_connect(t_rdfl *, const char *, int, e_rdflsettings, e_rdflerrors *);
 
 const char	*handler_typedef_declare(void *ptr);
 void		rdfl_clean(t_rdfl *obj);

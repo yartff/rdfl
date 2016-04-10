@@ -3,6 +3,50 @@
 #include	<stdlib.h>
 #include	<string.h>
 #include	"rdfl_local.h"
+#include	"rdfl_network.h"
+
+//
+// Read wrappers utils
+
+static
+size_t
+rdfl_monitore_into_chunk_extend(t_rdfl *obj, e_rdflerrors *err) {
+  void		*ptr;
+  size_t	s;
+  ssize_t	ret;
+
+  if (!(ptr = rdfl_b_buffer_getchunk_extend(&obj->data, &s, obj->v.buffsize))) {
+    if (err) *err = ERR_MEMORY;
+    return (0);
+  }
+  if ((ret = rdfl_b_push_read(&obj->data, obj->fd, ptr, s)) < 0) {
+    if (err != NULL) *err = ret;
+    return (0);
+  }
+  if (ret == 0 && err != NULL) *err = ERR_CONNECTION_CLOSED;
+  return (ret);
+}
+
+static
+size_t
+rdfl_monitore_into_chunk(t_rdfl *obj, e_rdflerrors *err) {
+  void		*ptr;
+  size_t	s;
+  ssize_t	ret;
+
+  ptr = rdfl_b_buffer_getchunk(&obj->data, &s);
+  if (!s) {
+    if (err) *err = ERR_NOSPACELEFT;
+    return (0);
+  }
+  if ((ret = rdfl_b_push_read(&obj->data, obj->fd, ptr, s)) < 0) {
+    if (err != NULL) *err = ret;
+    return (0);
+  }
+  if (ret == 0 && err != NULL) *err = ERR_CONNECTION_CLOSED;
+  return (ret);
+}
+
 
 // API infos
 //
@@ -37,7 +81,7 @@ rdfl_flush_buffers_alloc(t_rdfl *obj, ssize_t *count_value) {
 void *
 rdfl_flush_firstbuffer_alloc(t_rdfl *obj, ssize_t *count_value) {
   void		*ptr;
-  
+
   if (!(ptr = rdfl_b_consume_firstbuffer_alloc(&obj->data, count_value)))
     return (NULL);
   if (RDFL_OPT_ISSET(obj->settings, RDFL_FULLEMPTY))
@@ -71,7 +115,7 @@ _read_size(t_rdfl *obj, size_t count) {
   while (count) {
     if (!(ptr = rdfl_b_buffer_getchunk_extend(&obj->data, &available,
 	    (RDFL_OPT_ISSET(obj->settings, RDFL_ADJUST_BUFFSIZE)
-	     ? count : obj->v.buffsize))))
+	     ? count : (size_t)obj->v.buffsize))))
       return (ERR_MEMORY);
     if (available > count) available = count;
     if ((s = rdfl_b_push_read(&obj->data, obj->fd, ptr, available)) < 0)
@@ -88,7 +132,6 @@ _read_all_available(t_rdfl *obj) {
   ssize_t	full = 1;
   void		*ptr;
 
-  // TODO monitoring
   while (full) {
     if (!(ptr = rdfl_b_buffer_getchunk_extend(&obj->data, &available, obj->v.buffsize)))
       return (ERR_MEMORY);
@@ -125,18 +168,32 @@ _read_legacy(t_rdfl *obj, void *buf, size_t count) {
 }
 
 static
-ssize_t
-_read_monitoring(t_rdfl *obj) {
+size_t
+_read_monitoring(t_rdfl *obj, e_rdflerrors *err) {
+  t_rdfl_net	nw;
+  size_t	total = 0, ret;
+  int		nw_ret;
+  size_t	(*fct)(t_rdfl *, e_rdflerrors *);
+
+  if (err) *err = ERR_NONE;
+  fct = (RDFL_OPT_ISSET(obj->settings, RDFL_NO_EXTEND)
+      ? &rdfl_monitore_into_chunk : &rdfl_monitore_into_chunk_extend);
+  if ((nw_ret = rdfl_nw_init(&nw, obj->fd, obj->v.timeout)) < 0) {
+    if (err) *err = nw_ret;
+    return (0);
+  }
   if (RDFL_OPT_ISSET(obj->settings, RDFL_ALL_AVAILABLE)) {
-    /*
-       return (rdfl_b_push_all_local_monitoring(&obj->data, obj->fd, obj->v.buffsize,
-       RDFL_OPT_ISSET(obj->settings, RDFL_TIMEOUT) ? obj->v.timeout : -1));
-       */ // TODO
+    while ((nw_ret = rdfl_nw_monitoring(&nw)) > 0) {
+      if ((ret = fct(obj, err)) == 0) goto endloop;
+      total += ret;
+    }
+    if (nw_ret != 0 && err) *err = nw_ret;
   }
-  if (RDFL_OPT_ISSET(obj->settings, RDFL_NO_EXTEND)) {
-    // TODO
-  }
-  return (-1);
+  else if ((nw_ret = rdfl_nw_monitoring(&nw)) > 0)
+    total = fct(obj, err);
+endloop:
+  rdfl_nw_clean(&nw);
+  return (total);
 }
 
 // Destructors
@@ -173,6 +230,10 @@ _check_settings(e_rdflsettings settings) {
       && RDFL_OPT_ISSET(settings, RDFL_NO_EXTEND)) {
     return (EXIT_FAILURE);
   } // NO_EXTEND will always have a fixed buffer. Won't free it.
+  if (RDFL_OPT_ISSET(settings, RDFL_ADJUST_BUFFSIZE)
+      && !RDFL_OPT_ISSET(settings, RDFL_FORCEREADSIZE)) {
+    return (EXIT_FAILURE);
+  }
   return (EXIT_SUCCESS);
 }
 
@@ -233,10 +294,15 @@ rdfl_load_path(t_rdfl *new, const char *path, e_rdflsettings settings, e_rdflerr
 }
 
 void *
-rdfl_connect(t_rdfl *new, const char *ip, int port) {
-  // TODO
-  (void)new, (void)ip, (void)port;
-  return (NULL);
+rdfl_load_connect(t_rdfl *new, const char *ip, int port, e_rdflsettings settings, e_rdflerrors *err) {
+  int		fd_sock;
+
+  if ((fd_sock = rdfl_nw_openconnection(ip, port)) < 0) {
+    if (err) *err = fd_sock;
+    return (NULL);
+  }
+  RDFL_OPT_SET(settings, RDFL_LOC_OPEN);
+  return (rdfl_load(new, fd_sock, settings, err));
 }
 
 // Helpers

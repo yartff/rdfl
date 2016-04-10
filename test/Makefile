@@ -8,13 +8,14 @@ CMD_RM		=		@rm -rfv
 SRC		=		main_test.c				\
 				test_1-allavailable_reader.c		\
 				test_2-inplace_reader.c			\
-				test_3-buffer-elasticity_tester.c
+				test_3-buffer-elasticity_tester.c	\
+				test_4-monitoring_reader.c
 
 OBJ		=		$(SRC:.c=.o)
 
 LD_FLAGS	+=		-lrdfl
 CFLAGS		+=		-Wall -Wextra
-CFLAGS		+=		-g3
+## CFLAGS		+=		-g3
 CFLAGS		+=		-I$(INCDIR)
 
 $(TEST):		$(OBJ)
