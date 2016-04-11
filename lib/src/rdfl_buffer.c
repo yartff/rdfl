@@ -324,7 +324,9 @@ rdfl_b_print_buffers(t_rdfl_buffer *b) {
   t_rdfl_b_list		*raw = b->consumer.raw;
   size_t		tmp;
 
-  printf("TOT: %zu (First TOT: %zu/%zu) \n\033[1;31m{\033[0m", b->consumer.total,
+  printf("\033[0;33mTOT: \033[0m%zu \033[0;33m"
+      "(First TOT: \033[0m%zu\033[0;33m/\033[0m%zu\033[0;33m) "
+      "\n\033[1;31m{\033[0m", b->consumer.total,
       b->consumer.l_total, b->consumer.raw->size);
   while (raw) {
     if (raw == b->consumer.raw) {
@@ -346,7 +348,7 @@ rdfl_b_print_buffers(t_rdfl_buffer *b) {
       if (raw == b->buffer.raw) {
 	print_buffer(raw->data, b->buffer.ndx);
 	print_chars('_', raw->size - b->buffer.ndx);
-	printf("\033[1;31m}\033[0m\n""Last buffer: (%zu/%zu, %zu Bytes free space)\n",
+	printf("\033[1;31m}}\033[0m\n""Last buffer: (%zu/%zu, %zu Bytes free space)\n",
 	    b->buffer.ndx, raw->size, raw->size - b->buffer.ndx);
 	return ;
       }
