@@ -7,12 +7,12 @@ test_3__bufferelasticity_tester(void) {
   size_t			i = 0;
   readsize_handler_t		rdfl_read;
   int				tab[] = {
-    50, -10, 30, -10, 200, -45,
+    50, -10, 30, -10, 200, -45, 51, 1, -10, -59
   };
 
   rdfl_init(&example);
-  rdfl_set_buffsize(&example, 64);
-  if (!(rdfl_read = rdfl_load_path(&example, "/etc/passwd", RDFL_FORCEREADSIZE, NULL)))
+  rdfl_set_buffsize(&example, 100);
+  if (!(rdfl_read = rdfl_load_path(&example, "/dev/urandom", RDFL_FORCEREADSIZE, NULL)))
     return (EXIT_FAILURE);
   while (i < (sizeof(tab) / sizeof(*tab))) {
     if (tab[i] < 0)
@@ -22,7 +22,6 @@ test_3__bufferelasticity_tester(void) {
     rdfl_printbufferstate(&example);
     ++i;
   }
-
   rdfl_clean(&example);
   return (EXIT_SUCCESS);
 }

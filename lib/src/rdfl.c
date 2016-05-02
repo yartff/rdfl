@@ -7,7 +7,6 @@
 
 //
 // Read wrappers utils
-
 static
 size_t
 rdfl_read_into_chunk_extend(t_rdfl *obj, e_rdflerrors *err) {
@@ -291,16 +290,22 @@ _check_settings(e_rdflsettings settings) {
 static
 void *
 _check_func(e_rdflsettings settings) {
-  if (RDFL_OPT_ISSET(settings, RDFL_FORCEREADSIZE))
-    return (&_read_size);
-  if (RDFL_OPT_ISSET(settings, RDFL_MONITORING))
-    return (&_read_monitoring);
-  if (RDFL_OPT_ISSET(settings, RDFL_NO_EXTEND))
-    return (&_read_noextend);
-  if (RDFL_OPT_ISSET(settings, RDFL_ALL_AVAILABLE))
-    return (&_read_all_available);
-  if (RDFL_OPT_ISSET(settings, RDFL_LEGACY))
-    return (&_read_legacy);
+  unsigned int	i = 0;
+  static struct {
+    void *fct;
+    e_rdflsettings	flag;
+  }	readersTable[] = {
+    {&_read_size, RDFL_FORCEREADSIZE},
+    {&_read_monitoring, RDFL_MONITORING},
+    {&_read_noextend, RDFL_NO_EXTEND},
+    {&_read_all_available, RDFL_ALL_AVAILABLE},
+    {&_read_legacy, RDFL_LEGACY},
+  };
+  while (i < (sizeof(readersTable) / sizeof(*readersTable))) {
+    if (RDFL_OPT_ISSET(settings, readersTable[i].flag))
+      return (readersTable[i].fct);
+    ++i;
+  }
   return (&_read_legacy); // TODO single read normal func
 }
 

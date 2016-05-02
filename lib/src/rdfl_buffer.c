@@ -317,7 +317,6 @@ print_buffer(const char *str, size_t count) {
   printf("\033[0m");
 }
 
-// TODO handle '\n' and unprintable characters for a proper debug
 // TODO display size of each buffer
 void
 rdfl_b_print_buffers(t_rdfl_buffer *b) {
@@ -348,7 +347,7 @@ rdfl_b_print_buffers(t_rdfl_buffer *b) {
       if (raw == b->buffer.raw) {
 	print_buffer(raw->data, b->buffer.ndx);
 	print_chars('_', raw->size - b->buffer.ndx);
-	printf("\033[1;31m}}\033[0m\n""Last buffer: (%zu/%zu, %zu Bytes free space)\n",
+	printf("\033[1;31m]}\033[0m\n""Last buffer: (%zu/%zu, %zu Bytes free space)\n",
 	    b->buffer.ndx, raw->size, raw->size - b->buffer.ndx);
 	return ;
       }

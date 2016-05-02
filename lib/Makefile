@@ -16,6 +16,7 @@ OBJ		=		$(SRC:.c=.o)
 
 CFLAGS		+=		-Wall -Wextra
 CFLAGS		+=		-fPIC -std=c99
+CFLAGS		+=		-O3
 CFLAGS		+=		-finline-functions
 CFLAGS		+=		-I$(INCDIR)
 CFLAGS		+=		-D_POSIX_C_SOURCE
