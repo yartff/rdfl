@@ -57,13 +57,12 @@ size_t
 rdfl_monitoring_read(t_rdfl *obj, t_rdfl_net *nw, e_rdflerrors *err) {
   size_t	(*fct)(t_rdfl *, e_rdflerrors *);
   int		nw_ret;
-  size_t	total;
+  size_t	total = 0;
   e_rdflerrors	localerr = ERR_NONE;
 
   fct = (RDFL_OPT_ISSET(obj->settings, RDFL_NO_EXTEND)
       ? &rdfl_read_into_chunk
       : &rdfl_read_into_chunk_extend);
-
 
   if ((nw_ret = rdfl_nw_monitoring(nw)) > 0) {
     total = fct(obj, &localerr);
