@@ -1,0 +1,12 @@
+	NONE	INPLACE	TIMEOUT	NOEXT	FORCE	ADJUST	ALL	LEGACY	THREAD	MONI	FEMPTY	
+NONE	x	0	0	0	0	0	0	0	0	0	0	 = _read_legacy (TODO)
+INPLACE		x										
+TIMEOUT			x									
+NOEXT				x								 = _read_noextend
+FORCE					x							 = _read_size
+ADJUST						x						
+ALL							x					
+LEGACY								x				
+THREAD									x			
+MONI										x		 = _read_monitoring
+FEMPTY											x	
