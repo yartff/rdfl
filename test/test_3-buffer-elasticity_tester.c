@@ -7,7 +7,7 @@ test_3__bufferelasticity_tester(void) {
   size_t			i = 0;
   readsize_handler_t		rdfl_read;
   int				tab[] = {
-    50, -10, 30, -10, 200, -45, 51, 1, -10, -59
+    50, -10, 30, -10, 200, -45, 51, 1, -10, -59, -190, 50, 42, -1, 1, -4, 4
   };
 
   rdfl_init(&example);

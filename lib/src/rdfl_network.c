@@ -11,19 +11,34 @@ rdfl_nw_clean(t_rdfl_net *obj) {
 }
 
 int
-rdfl_nw_init(t_rdfl_net *obj, int fd, ssize_t timeout) {
-  if (timeout == -1)
-    obj->timeout = NULL;
+rdfl_nw_init_timeout(t_rdfl_net *obj, ssize_t timeout) {
+  if (timeout == -1) {
+    if (obj->timeout) {
+      free(obj->timeout);
+      obj->timeout = NULL;
+    }
+  }
   else {
-    if (!(obj->timeout = malloc(sizeof(*obj->timeout))))
-      return (ERR_MEMORY);
+    if (!obj->timeout)
+      if (!(obj->timeout = malloc(sizeof(*obj->timeout))))
+	return (ERR_MEMORY);
     obj->timeout->tv_usec = timeout % 1000000;
     obj->timeout->tv_sec = timeout / 1000000;
   }
+  return (ERR_NONE);
+}
+
+void
+rdfl_nw_init_select(t_rdfl_net *obj, int fd) {
   FD_ZERO(&obj->fds);
   FD_SET(fd, &obj->fds);
   obj->fd_select = fd + 1;
-  return (ERR_NONE);
+}
+
+int
+rdfl_nw_init(t_rdfl_net *obj, int fd, ssize_t timeout) {
+  rdfl_nw_init_select(obj, fd);
+  return (rdfl_nw_init_timeout(obj, timeout));
 }
 
 int

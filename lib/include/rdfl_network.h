@@ -12,7 +12,9 @@ typedef			struct {
   int			fd_select;
 }			t_rdfl_net;
 
+int			rdfl_nw_init_timeout(t_rdfl_net *, ssize_t);
 int			rdfl_nw_init(t_rdfl_net *, int, ssize_t);
+void			rdfl_nw_init_select(t_rdfl_net *, int);
 void			rdfl_nw_clean(t_rdfl_net *);
 int			rdfl_nw_monitoring(t_rdfl_net *);
 int			rdfl_nw_openconnection(const char *ip, int port);

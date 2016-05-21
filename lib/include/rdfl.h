@@ -4,6 +4,7 @@
 # include		<stdio.h>
 # include		<unistd.h>
 # include		"rdfl_buffer.h"
+# include		"rdfl_network.h"
 
 # define		RDFL_OPT_ISSET(value, opt)	(value & opt)
 # define		RDFL_OPT_SET(value, opt)	(value |= opt)
@@ -47,7 +48,8 @@ typedef			enum {
   ERR_NOT_IMPLEMENTED	= -9,
   ERR_CONNECTION	= -10,
   ERR_CONNECTION_CLOSED	= -11,
-  VAL_POTENTIALDATA	= -12
+  VAL_BEGIN		= -12,
+  VAL_POTENTIALDATA	= -13
 }			e_rdflerrors;
 
 typedef			struct {
@@ -56,6 +58,7 @@ typedef			struct {
 }			t_rdfl_values;
 
 typedef			struct {
+  t_rdfl_net		*nw;
   t_rdfl_values		v;
   e_rdflsettings	settings;
   int			fd;
@@ -84,7 +87,7 @@ void		*rdfl_load_connect(t_rdfl *, const char *, int, e_rdflsettings, e_rdflerro
 const char	*handler_typedef_declare(void *ptr);
 void		rdfl_clean(t_rdfl *obj);
 
-void		rdfl_set_timeout(t_rdfl *, ssize_t timeout);
+int		rdfl_set_timeout(t_rdfl *, ssize_t timeout);
 void		rdfl_set_buffsize(t_rdfl *, ssize_t buffsize);
 void		*rdfl_flush_buffers_alloc(t_rdfl *obj, ssize_t *count_value);
 void		*rdfl_getinplace_next_chunk(t_rdfl *, size_t *, size_t *);
