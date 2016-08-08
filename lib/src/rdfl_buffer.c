@@ -1,6 +1,6 @@
 #include	<unistd.h>
-#include	<sys/select.h>
 #include	<limits.h>
+#include	<stdio.h>
 #include	<string.h>
 #include	<stdlib.h>
 #include	"rdfl_buffer.h"
@@ -249,7 +249,7 @@ rdfl_b_buffer_getchunk_extend(t_rdfl_buffer *b, size_t *s, size_t amount) {
   if (!(*s)) {
     if (rdfl_b_add(b, amount) == EXIT_FAILURE) {
       *s = 0;
-      return (NULL); // TODO err
+      return (NULL);
     }
     ptr = rdfl_b_buffer_ptr(b, s);
   }

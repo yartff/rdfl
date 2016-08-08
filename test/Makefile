@@ -9,7 +9,9 @@ SRC		=		main_test.c				\
 				test_1-allavailable_reader.c		\
 				test_2-inplace_reader.c			\
 				test_3-buffer-elasticity_tester.c	\
-				test_4-monitoring_reader.c
+				test_4-monitoring_reader.c		\
+				test_5-monitoringall_reader.c#		\
+				test_6-monitoringnoext_reader.c
 
 OBJ		=		$(SRC:.c=.o)
 

@@ -31,3 +31,5 @@ test/tester
 
 # Debug files
 *.dSYM/
+
+notes.txt

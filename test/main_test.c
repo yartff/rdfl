@@ -7,6 +7,7 @@ int	(*test_functions[])(void) = {
   &test_2__inplace_reader,
   &test_3__bufferelasticity_tester,
   &test_4__monitoring_reader,
+  &test_5__monitoringall_reader,
 };
 
 // TODO test_5-errorcases_tester.c

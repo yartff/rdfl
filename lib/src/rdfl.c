@@ -4,31 +4,31 @@
 #include	<string.h>
 #include	"rdfl_local.h"
 #include	"rdfl_network.h"
+#include	"rdfl.h"
 
 //
 // Read wrappers utils
 static
-size_t
-rdfl_read_into_chunk_extend(t_rdfl *obj, e_rdflerrors *err) {
+ssize_t
+rdfl_read_into_chunk_extend(void *obj) {
   void		*ptr;
   size_t	s;
   ssize_t	ret;
 
-  if (!(ptr = rdfl_b_buffer_getchunk_extend(&obj->data, &s, obj->v.buffsize))) {
-    if (err) *err = ERR_MEMORY;
-    return (0);
-  }
-  if ((ret = rdfl_b_push_read(&obj->data, obj->fd, ptr, s)) < 0) {
-    if (err != NULL) *err = ret;
-    return (0);
-  }
-  if (err) {
-    if (ret == 0) *err = ERR_CONNECTION_CLOSED;
-    if ((size_t)ret == s) *err = VAL_POTENTIALDATA;
-  }
+  if (!(ptr = rdfl_b_buffer_getchunk_extend(&((t_rdfl *)obj)->data, &s,
+	  ((t_rdfl *)obj)->v.buffsize)))
+    return (ERR_MEMORY);
+  if ((ret = rdfl_b_push_read(&((t_rdfl *)obj)->data, ((t_rdfl *)obj)->fd, ptr, s)) < 0)
+    return (ret);
+  if (ret == 0)
+    return (VAL_LAST_READ_0);
+#if 0
+  if ((size_t)ret == s) *err = VAL_POTENTIALDATA;
+#endif
   return (ret);
 }
 
+#if 0
 static
 int
 rdfl_lookup_freespace(t_rdfl *obj) {
@@ -36,71 +36,25 @@ rdfl_lookup_freespace(t_rdfl *obj) {
   rdfl_b_buffer_getchunk(&obj->data, &s);
   return ((s != 0));
 }
+#endif
 
 static
-size_t
-rdfl_read_into_chunk(t_rdfl *obj, e_rdflerrors *err) {
+ssize_t
+rdfl_read_into_chunk(void *obj) {
   void		*ptr;
   size_t	s;
   ssize_t	ret;
 
-  ptr = rdfl_b_buffer_getchunk(&obj->data, &s);
-  if (!s) {
-    if (err) *err = ERR_NOSPACELEFT;
-    return (0);
+  ptr = rdfl_b_buffer_getchunk(&((t_rdfl *)obj)->data, &s);
+  if (!s)
+    return (ERR_NOSPACELEFT);
+  if ((ret = rdfl_b_push_read(&((t_rdfl *)obj)->data, ((t_rdfl *)obj)->fd, ptr, s)) < 0) {
+    return (ret);
   }
-  if ((ret = rdfl_b_push_read(&obj->data, obj->fd, ptr, s)) < 0) {
-    if (err != NULL) *err = ret;
-    return (0);
-  }
-  if (err) {
-    if (ret == 0) *err = ERR_CONNECTION_CLOSED;
-    if ((size_t)ret == s) *err = VAL_POTENTIALDATA;
-  }
+#if 0
+  if ((size_t)ret == s) *err = VAL_POTENTIALDATA;
+#endif
   return (ret);
-}
-
-static
-size_t
-rdfl_monitoring_read(t_rdfl *obj, e_rdflerrors *err) {
-  size_t	(*fct)(t_rdfl *, e_rdflerrors *);
-  size_t	total = 0;
-  e_rdflerrors	localerr = ERR_NONE;
-
-  fct = (RDFL_OPT_ISSET(obj->settings, RDFL_NO_EXTEND)
-      ? &rdfl_read_into_chunk
-      : &rdfl_read_into_chunk_extend);
-
-  if (RDFL_OPT_ISSET(obj->settings, RDFL_FILLFREESPACE)) {
-    do {
-      if ((localerr = rdfl_nw_monitoring(obj->nw)) <= 0)
-	break ;
-      total += fct(obj, &localerr);
-      if (localerr != ERR_NONE && localerr > VAL_BEGIN)
-	break ;
-    } while (rdfl_lookup_freespace(obj) && localerr == VAL_POTENTIALDATA);
-  }
-  else if ((localerr = rdfl_nw_monitoring(obj->nw)) > 0)
-    total += fct(obj, &localerr);
-  if (err) *err = (localerr < VAL_BEGIN) ? ERR_NONE : localerr;
-  return (total);
-}
-
-static
-size_t
-rdfl_monitoring_allavail(t_rdfl *obj, e_rdflerrors *err) {
-  size_t	total = 0, ret;
-  int		nw_ret;
-
-  while ((nw_ret = rdfl_nw_monitoring(obj->nw)) > 0) {
-    if ((ret = rdfl_read_into_chunk_extend(obj, err)) == 0) {
-      if (err) *err = ERR_CONNECTION_CLOSED;
-      return (total);
-    }
-    total += ret;
-  }
-  if (nw_ret != 0 && err) *err = nw_ret;
-  return (total);
 }
 
 // API infos
@@ -153,6 +107,7 @@ rdfl_getinplace_next_chunk(t_rdfl *obj, size_t *s, size_t *total_s) {
   return (ptr);
 }
 
+inline
 void
 rdfl_force_consume_size(t_rdfl *obj, size_t s) {
   rdfl_b_consume_size(&obj->data, s);
@@ -160,7 +115,17 @@ rdfl_force_consume_size(t_rdfl *obj, size_t s) {
 
 // API Readers
 //
-static
+ssize_t
+_read_singlestep(t_rdfl *obj) {
+  void		*ptr;
+  size_t	available;
+
+  if (!(ptr = rdfl_b_buffer_getchunk_extend(&obj->data, &available,
+	  (size_t)obj->v.buffsize)))
+    return (ERR_MEMORY);
+  return (rdfl_b_push_read(&obj->data, obj->fd, ptr, available));
+}
+
 int
 _read_size(t_rdfl *obj, size_t count) {
   void		*ptr;
@@ -180,39 +145,47 @@ _read_size(t_rdfl *obj, size_t count) {
   return (ERR_NONE);
 }
 
-static
 ssize_t
-_read_all_available(t_rdfl *obj) {
-  size_t	available, total = 0;
-  ssize_t	full = 1;
+_read_all_available(t_rdfl *obj, e_rdflerrors *err) {
+  size_t	available;
+  ssize_t	full = 1, total = 0;
   void		*ptr;
 
   while (full) {
-    if (!(ptr = rdfl_b_buffer_getchunk_extend(&obj->data, &available, obj->v.buffsize)))
+    if (!(ptr = rdfl_b_buffer_getchunk_extend(&obj->data, &available, obj->v.buffsize))) {
+      if (err) {
+	*err = ERR_MEMORY;
+	return (total);
+      }
       return (ERR_MEMORY);
-    if ((full = rdfl_b_push_read(&obj->data, obj->fd, ptr, available)) < 0)
+    }
+    if ((full = rdfl_b_push_read(&obj->data, obj->fd, ptr, available)) <= 0) {
+      if (err) {
+	*err = (!full ? VAL_LAST_READ_0 : full);
+	return (total);
+      }
+      if (!full || full < VAL || full == ERR_CONNECTION_CLOSED)
+	return (total);
       return (full);
+    }
     total += full;
     full = ((size_t)full == available);
   }
   return (total);
 }
 
-static
-size_t
-_read_noextend(t_rdfl *obj, size_t consume, e_rdflerrors *err) {
-  size_t	s, total;
-  ssize_t	ret;
+ssize_t
+_read_noextend(t_rdfl *obj, size_t consume) {
+  size_t	s;
+  ssize_t	total = 0;
   void		*ptr;
 
   rdfl_b_consume_size(&obj->data, consume);
   ptr = rdfl_b_buffer_getchunk(&obj->data, &s);
-  if (!s) { if (err) *err = ERR_NOSPACELEFT; return (0); }
-  if ((ret = rdfl_b_push_read(&obj->data, obj->fd, ptr, s)) < 0) {
-    if (err) *err = ret;
-    return (0);
-  }
-  total = (size_t)ret;
+  if (!s) { return (ERR_NOSPACELEFT); }
+  if ((total = rdfl_b_push_read(&obj->data, obj->fd, ptr, s)) < 0)
+    return (total);
+#if 0
   if (RDFL_OPT_ISSET(obj->settings, RDFL_FILLFREESPACE) && total == s) {
     ptr = rdfl_b_buffer_getchunk(&obj->data, &s);
     if (!s) return ((size_t)ret);
@@ -221,27 +194,42 @@ _read_noextend(t_rdfl *obj, size_t consume, e_rdflerrors *err) {
       return (total);
     }
   }
-  return ((size_t)ret + total);
+#endif
+  return (total);
 }
 
-static
 ssize_t
 _read_legacy(t_rdfl *obj, void *buf, size_t count) {
   (void)obj, (void)buf, (void)count;
   return (0);
 }
 
-static
-size_t
-_read_monitoring(t_rdfl *obj, e_rdflerrors *err) {
-  size_t	total;
+ssize_t
+_read_monitoring_no_extend(t_rdfl *obj) {
+  return (rdfl_nw_monitoring(obj->nw, &rdfl_read_into_chunk, obj));
+}
 
-  if (err) *err = ERR_NONE;
-  if (RDFL_OPT_ISSET(obj->settings, RDFL_ALL_AVAILABLE))
-    total = rdfl_monitoring_allavail(obj, err);
-  else
-    total = rdfl_monitoring_read(obj, err);
+ssize_t
+_read_monitoring_allavail(t_rdfl *obj, e_rdflerrors *err) {
+  ssize_t	total = 0;
+  nwret_t	nw_ret;
+
+  while ((nw_ret = rdfl_nw_monitoring(obj->nw, &rdfl_read_into_chunk_extend, obj)) > 0)
+    total += nw_ret;
+  if (nw_ret < ERR_NONE && nw_ret > VAL) {
+    if (err) {
+      *err = nw_ret;
+      return (total);
+    }
+    return (nw_ret);
+  }
+  if (err && nw_ret < ERR_NONE) *err = nw_ret;
   return (total);
+}
+
+ssize_t
+_read_monitoring(t_rdfl *obj) {
+  return (rdfl_nw_monitoring(obj->nw, &rdfl_read_into_chunk_extend, obj));
 }
 
 // Destructors
@@ -262,78 +250,37 @@ rdfl_clean(t_rdfl *obj) {
 
 // Constructors
 //
-static
-int
-_check_settings(e_rdflsettings settings) {
-  if (RDFL_OPT_ISSET(settings, RDFL_ALL_AVAILABLE)
-      && (RDFL_OPT_ISSET(settings, RDFL_NO_EXTEND)
-	|| RDFL_OPT_ISSET(settings, RDFL_FILLFREESPACE))) {
-    return (EXIT_FAILURE);
-  } // Cannot read ALL_AVAILABLE with constraints from NO_EXTEND
-  // Illogic to FILLFREESPACE when already reading ALL_AVAILABLE data
-  if (RDFL_OPT_ISSET(settings, RDFL_TIMEOUT)
-      && !RDFL_OPT_ISSET(settings, RDFL_MONITORING)) {
-    return (EXIT_FAILURE);
-  } // Cannot apply a timeout without monitoring the fd
-  if (RDFL_OPT_ISSET(settings, RDFL_LEGACY)
-      && (RDFL_OPT_ISSET(settings, RDFL_ALL_AVAILABLE)
-	|| (RDFL_OPT_ISSET(settings, RDFL_FULLEMPTY)))) {
-    return (EXIT_FAILURE);
-  } // LEGACY means reading in the user's buffer
-  if (RDFL_OPT_ISSET(settings, RDFL_FULLEMPTY)
-      && RDFL_OPT_ISSET(settings, RDFL_NO_EXTEND)) {
-    return (EXIT_FAILURE);
-  } // NO_EXTEND will always have a fixed buffer. Won't free it.
-  if (RDFL_OPT_ISSET(settings, RDFL_ADJUST_BUFFSIZE)
-      && !RDFL_OPT_ISSET(settings, RDFL_FORCEREADSIZE)) {
-    return (EXIT_FAILURE);
-  } // can ADJUST_BUFFSIZE only if it knows what you need from FORCEREADSIZE
-  return (EXIT_SUCCESS);
-}
-
 static struct {
   void			*fct;
-  e_rdflsettings	flag;
   const char		*name;
+  e_rdflsettings	flag;
 }	readersTable[] = {
-  {&_read_size, RDFL_FORCEREADSIZE, "readsize_handler_t"},
-  {&_read_monitoring, RDFL_MONITORING, "readmonitoring_handler_t"},
-  {&_read_noextend, RDFL_NO_EXTEND, "readnoextend_handler_t"},
-  {&_read_all_available, RDFL_ALL_AVAILABLE, "readall_handler_t"},
-  {&_read_legacy, RDFL_LEGACY, "readlegacy_handler_t"},
+  // Order matters
+  {&_read_size, "readsize_handler_t", RDFL_FORCEREADSIZE},
+  {&_read_monitoring_no_extend, "readmonitoringnoext_handler_t", RDFL_MONITORING | RDFL_NO_EXTEND},
+  {&_read_monitoring_allavail, "readmonitoringall_handler_t", RDFL_MONITORING | RDFL_ALL_AVAILABLE},
+  {&_read_monitoring, "readmonitoring_handler_t", RDFL_MONITORING},
+  {&_read_noextend, "readnoextend_handler_t", RDFL_NO_EXTEND},
+  {&_read_all_available, "readall_handler_t", RDFL_ALL_AVAILABLE},
+  {&_read_legacy, "readlegacy_handler_t", RDFL_LEGACY},
+  {&_read_singlestep, "read_singlestep_t", RDFL_NONE},
 };
 
-static
-void *
-_check_func(e_rdflsettings settings) {
-  unsigned int	i = 0;
-  while (i < (sizeof(readersTable) / sizeof(*readersTable))) {
-    if (RDFL_OPT_ISSET(settings, readersTable[i].flag))
-      return (readersTable[i].fct);
-    ++i;
-  }
-  return (&_read_legacy); // TODO single read normal func
-}
-
-void *
+rdflret_t
 rdfl_load(t_rdfl *new, int fd, e_rdflsettings settings, e_rdflerrors *err) {
   e_rdflerrors	nw_ret;
 
-  if (_check_settings(settings) == EXIT_FAILURE) {
-    if (err) *err = ERR_BADFLAGS;
-    return (NULL);
-  }
   new->fd = fd;
   new->settings = settings;
   if (RDFL_OPT_ISSET(settings, RDFL_MONITORING)) {
     if (!(new->nw = malloc(sizeof(*(new->nw))))) {
       if (err) *err = ERR_MEMORY;
-      return (NULL);
+      return (EXIT_FAILURE);
     }
     new->nw->timeout = NULL;
     if ((nw_ret = rdfl_nw_init(new->nw, fd, new->v.timeout)) != ERR_NONE) {
       if (err) *err = nw_ret;
-      return (NULL);
+      return (EXIT_FAILURE);
     }
   }
   if (rdfl_buffer_init(&(new->data),
@@ -341,42 +288,43 @@ rdfl_load(t_rdfl *new, int fd, e_rdflsettings settings, e_rdflerrors *err) {
 	  || RDFL_OPT_ISSET(settings, RDFL_FULLEMPTY)) ?
 	 0 : new->v.buffsize)) == EXIT_FAILURE) {
     if (err) *err = ERR_MEMORY;
-    return (NULL);
+    return (EXIT_FAILURE);
   }
   if (err) *err = ERR_NONE;
-  return (_check_func(settings));
+  return (EXIT_SUCCESS);
+  // return (_check_func(settings));
 }
 
-void *
+rdflret_t
 rdfl_load_fileptr(t_rdfl *new, FILE *stream, e_rdflsettings settings, e_rdflerrors *err) {
   int		fd_type;
 
   if ((fd_type = fileno(stream)) == -1) {
     if (err) *err = ERR_BADF;
-    return (NULL);
+    return (EXIT_FAILURE);
   }
   return (rdfl_load(new, fd_type, settings, err));
 }
 
-void *
+rdflret_t
 rdfl_load_path(t_rdfl *new, const char *path, e_rdflsettings settings, e_rdflerrors *err) {
   int		fd;
 
   if ((fd = open(path, O_RDONLY)) == - 1) {
     if (err) *err = ERR_OPEN;
-    return (NULL);
+    return (EXIT_FAILURE);
   }
   RDFL_OPT_SET(settings, RDFL_LOC_OPEN);
   return (rdfl_load(new, fd, settings, err));
 }
 
-void *
+rdflret_t
 rdfl_load_connect(t_rdfl *new, const char *ip, int port, e_rdflsettings settings, e_rdflerrors *err) {
   int		fd_sock;
 
   if ((fd_sock = rdfl_nw_openconnection(ip, port)) < 0) {
     if (err) *err = fd_sock;
-    return (NULL);
+    return (EXIT_FAILURE);
   }
   RDFL_OPT_SET(settings, RDFL_LOC_OPEN);
   return (rdfl_load(new, fd_sock, settings, err));
@@ -394,6 +342,17 @@ handler_typedef_declare(void *ptr) {
     ++i;
   }
   return (NULL);
+}
+
+void *
+get_func(e_rdflsettings settings) {
+  unsigned int	i = 0;
+  while (i < (sizeof(readersTable) / sizeof(*readersTable))) {
+    if (RDFL_OPT_CONTAINALL(settings, readersTable[i].flag))
+      return (readersTable[i].fct);
+    ++i;
+  }
+  return (&_read_singlestep); // TODO single read normal func
 }
 
 void

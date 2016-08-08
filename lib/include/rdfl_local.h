@@ -1,7 +1,7 @@
 #ifndef			__RDFL_LOCAL_H_
 # define		__RDFL_LOCAL_H_
 
-# include		"rdfl.h"
+# include		"rdfl_status_codes.h"
 
 # define		RDFL_DEFAULT_BUFFSIZE	4096 // (bytes) // TODO pagesize() ?
 # define		RDFL_DEFAULT_TIMEOUT	-1 // (blocking reads)

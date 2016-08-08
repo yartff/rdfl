@@ -15,12 +15,13 @@ SRC		=		\
 OBJ		=		$(SRC:.c=.o)
 
 CFLAGS		+=		-Wall -Wextra
-CFLAGS		+=		-fPIC -std=c99
+CFLAGS		+=		-fPIC -std=gnu99
 CFLAGS		+=		-O3
 CFLAGS		+=		-finline-functions
 CFLAGS		+=		-I$(INCDIR)
 CFLAGS		+=		-D_POSIX_C_SOURCE
-## CFLAGS		+=		-g3
+# CFLAGS	+=		-g3
+# LD_FLAGS	+=		-lrt
 
 $(NOLN_NAME):		$(OBJ)
 	$(CMD_CC) $(OBJ) -shared -o $(NAME) $(LD_FLAGS)

@@ -1,12 +1,17 @@
-	NONE	INPLACE	TIMEOUT	NOEXT	FORCE	ADJUST	ALL	LEGACY	THREAD	MONI	FEMPTY	
-NONE	x	0	0	0	0	0	0	0	0	0	0	 = _read_legacy (TODO)
-INPLACE		x										
-TIMEOUT			x									
-NOEXT				x								 = _read_noextend
-FORCE					x							 = _read_size
-ADJUST						x						
-ALL							x					
-LEGACY								x				
-THREAD									x			
-MONI										x		 = _read_monitoring
-FEMPTY											x	
+			NONE	NOEXT	FORCE	ADJUST	ALL	LEGACY	THSAFE	MONI	FEMPTY
+_read_size		0	0	1	2+	0	0	2-	0	3
+_read_monitoring	0	2+	4	0	2+	0	2-	1	3
+_read_noextend		0	1	4	0	0	0	2-	4	3
+_read_all_available	0	4	4	0	1	0	2-	4	3
+_read_legacy (TODO)	0	4	4	0	4	1	2-	2-	0
+_read_normal		0	4	4	0	4	4	2-	4	3
+
+0 = Not possible
+1 = Will always be
+2 = Can be
+3 = Can be but makes no difference
+4 = Handled in head column func, can be considered a 0 from line func's pov
++ = implemented
+- = not implemented yet
+
+TODO: TRACK (line, col), AUTOCLOSE
