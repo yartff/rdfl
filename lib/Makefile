@@ -11,6 +11,7 @@ SRC		=		\
 				$(SRCDIR)rdfl.c				\
 				$(SRCDIR)rdfl_buffer.c			\
 				$(SRCDIR)rdfl_network.c			\
+				$(SRCDIR)rdfl_buffer_access.c			\
 
 OBJ		=		$(SRC:.c=.o)
 
@@ -20,6 +21,7 @@ CFLAGS		+=		-O3
 CFLAGS		+=		-finline-functions
 CFLAGS		+=		-I$(INCDIR)
 CFLAGS		+=		-D_POSIX_C_SOURCE
+CFLAGS		+=		-D_POSIX_SOURCE
 # CFLAGS	+=		-g3
 # LD_FLAGS	+=		-lrt
 

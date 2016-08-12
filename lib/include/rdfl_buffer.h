@@ -36,7 +36,6 @@ void		rdfl_buffer_clean(t_rdfl_buffer *);
 void		rdfl_b_fullclean_if_empty(t_rdfl_buffer *);
 
 // Buffer
-
 void		*rdfl_b_buffer_getchunk(t_rdfl_buffer *, size_t *);
 void		*rdfl_b_buffer_getchunk_extend(t_rdfl_buffer *, size_t *, size_t);
 ssize_t		rdfl_b_push_read(t_rdfl_buffer *, int , void *, size_t);

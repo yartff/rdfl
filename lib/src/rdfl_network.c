@@ -97,7 +97,6 @@ _clock_gettime(struct timespec *ts) {
     return (ERR_TIMER);
   return (ERR_NONE);
 }
-#endif
 
 nwret_t
 rdfl_nw_timeout(t_rdfl_net *net, ssize_t (*callback)(void *), void *obj, struct timespec *ts) {
@@ -105,6 +104,7 @@ rdfl_nw_timeout(t_rdfl_net *net, ssize_t (*callback)(void *), void *obj, struct 
   // TODO
   return (ERR_NONE);
 }
+#endif
 
 e_rdflerrors
 rdfl_nw_openconnection(const char *ip, int port) {
