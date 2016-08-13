@@ -73,10 +73,11 @@ struct		s_bacc_ndx_data {
 static
 int
 _cb__bacc_ndx(void *ptr, size_t s, void *data) { // rdfl_bacc_ndx
-  if (PTYPE(data)->ndx > s) {
+  if (PTYPE(data)->ndx >= s) {
     PTYPE(data)->ndx -= s;
     return (0);
   }
+  printf("%zu\n", PTYPE(data)->ndx);
   PTYPE(data)->return_value = ((char *)ptr)[PTYPE(data)->ndx];
   return (1);
 }
@@ -84,14 +85,16 @@ _cb__bacc_ndx(void *ptr, size_t s, void *data) { // rdfl_bacc_ndx
 
 // Public Access
 void *
-rdfl_bacc_getallcontent(t_rdfl *obj, size_t *s) {
+rdfl_bacc_getallcontent(t_rdfl *obj, size_t *s, e_bacc_options e) {
   struct s_bacc_getallcontent_data	data;
 
-  *s = obj->data.consumer.total;
+  *s = obj->data.consumer.total + ((e & RBA_NULLTERMINATED) != 0);
   if (!(data.ptr = malloc(*s)))
     return (NULL);
   data.offset = 0;
   _iterate_chunk(obj, &_cb__bacc_getallcontent, &data);
+  if (e & RBA_NULLTERMINATED)
+    ((char *)data.ptr)[data.offset] = 0;
   return (data.ptr);
 }
 

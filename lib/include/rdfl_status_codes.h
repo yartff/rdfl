@@ -3,21 +3,21 @@
 
 typedef			enum {
   RDFL_NONE		= 0,
-  RDFL_LEGACY		= (RDFL_NONE + 1) << 1,
-  RDFL_FORCEREADSIZE	= (RDFL_NONE + 1) << 2,
-  RDFL_ALL_AVAILABLE	= (RDFL_NONE + 1) << 3,
-  RDFL_MONITORING	= (RDFL_NONE + 1) << 4,
-  RDFL_NO_EXTEND	= (RDFL_NONE + 1) << 5,
-  RDFL_ADJUST_BUFFSIZE	= (RDFL_NONE + 1) << 6,
+  RDFL_LEGACY		= 1 << 0,
+  RDFL_FORCEREADSIZE	= 1 << 1,
+  RDFL_ALL_AVAILABLE	= 1 << 2,
+  RDFL_MONITORING	= 1 << 3,
+  RDFL_NO_EXTEND	= 1 << 4,
+  RDFL_ADJUST_BUFFSIZE	= 1 << 5,
+  RDFL_FILLFREESPACE	= 1 << 6,
+  RDFL_THREADSAFE	= 1 << 7,
+  // RDFL_KEEPTRACK	= 1 << 8, Keep line/col infos
+  // RDFL_SIGMASK	= 1 << 9, // Use pselect instead
+  RDFL_FULLEMPTY	= 1 << 10,
+  // RDFL_READTIMEOUT	= 1 << 11
+  RDFL_LAST		= 1 << 12,
   // vvv : will come with consumer feature (ran in a different thread)
   // RDFL_CONSUMER_THREAD	= (RDFL_NONE + 1) << 1,
-  RDFL_FILLFREESPACE	= (RDFL_NONE + 1) << 7,
-  RDFL_THREADSAFE	= (RDFL_NONE + 1) << 8,
-  // RDFL_KEEPTRACK	= (RDFL_NONE + 1) << 9, Keep line/col infos
-  // RDFL_SIGMASK	= (RDFL_NONE + 1) << 10, // Use pselect instead
-  RDFL_FULLEMPTY	= (RDFL_NONE + 1) << 11,
-  // RDFL_READTIMEOUT	= (RDFL_NONE + 1) << 12
-  RDFL_LAST		= (RDFL_NONE + 1) << 13,
 }			e_rdflsettings;
 
 typedef			enum {

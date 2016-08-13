@@ -26,10 +26,10 @@ test_6__buffer_access(void) {
   }
   rdfl_printbufferstate(&example);
   printf("\n{result: %d}\n", rdfl_bacc_cmp(&example, "t:/bin/tcsh\nbin:x:1:1:bin:/bin", 15));
-  char	*str = rdfl_bacc_getallcontent(&example, &i);
-  write(1, "[", 1); write(1, str, i); write(1, "]\n", 2);
+  char	*str = rdfl_bacc_getallcontent(&example, &i, RBA_NULLTERMINATED);
+  printf("%s\n", str);
   free(str);
-  printf("%c\n", rdfl_bacc_ndx(&example, 3));
+  printf("%c\n", rdfl_bacc_ndx(&example, 2));
   rdfl_clean(&example);
   return (EXIT_SUCCESS);
 }
