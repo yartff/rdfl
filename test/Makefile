@@ -18,7 +18,7 @@ OBJ		=		$(SRC:.c=.o)
 
 LD_FLAGS	+=		-lrdfl
 CFLAGS		+=		-Wall -Wextra
-## CFLAGS		+=		-g3
+# CFLAGS		+=		-g3
 CFLAGS		+=		-I$(INCDIR)
 
 $(TEST):		$(OBJ)

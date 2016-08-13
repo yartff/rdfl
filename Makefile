@@ -17,7 +17,7 @@ exretest:	lib
 	@make retest -C $(TEST_DIR) --no-print-directory
 
 debug:		lib
-	@make re debug -C $(TEST_DIR) --no-print-directory
+	@make debug -C $(TEST_DIR) --no-print-directory
 
 clean:
 	@make fclean -C $(LIB_DIR) --no-print-directory

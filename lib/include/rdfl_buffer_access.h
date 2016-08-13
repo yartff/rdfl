@@ -3,5 +3,9 @@
 
 # include		"rdfl.h"
 
-int			rdfl_bacc_cmp(t_rdfl *, void *, size_t);
-#endif
+void		*rdfl_bacc_getallcontent(t_rdfl *, size_t *);
+int		rdfl_bacc_cmp(t_rdfl *, void *, size_t);
+size_t		rdfl_bacc_info_total(t_rdfl *);
+int		rdfl_bacc_ndx(t_rdfl *, size_t);
+
+#endif			/* !__RDFL_BUFFER_ACCESS_H_ */
