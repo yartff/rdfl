@@ -170,7 +170,7 @@ rdfl_b_next_chunk(t_rdfl_buffer *b, size_t *s) {
 }
 
 // if consumer.raw joins buffer.raw and buffer.ndx is on the end,
-// buffer.ndx goes back to 0 << TODO to reconsider
+// both consumer.ndx and buffer.ndx goes back to 0 << TODO to reconsider
 void
 rdfl_b_consume_size(t_rdfl_buffer *b, size_t value) {
   if (value > b->consumer.total) {
@@ -263,8 +263,9 @@ rdfl_b_buffer_getchunk(t_rdfl_buffer *b, size_t *s) {
 }
 
 // buffer.ndx should not got back to 0 when not on the consumer buffer
+static
 void
-rdfl_b_buffer_size(t_rdfl_buffer *b, size_t value) {
+rdfl_b_buffer_addsize(t_rdfl_buffer *b, size_t value) {
   if (!(b->consumer.raw->next))
     b->consumer.l_total += value;
   b->consumer.total += value;
@@ -272,8 +273,6 @@ rdfl_b_buffer_size(t_rdfl_buffer *b, size_t value) {
     b->buffer.ndx = 0;
 }
 
-// just reads s bytes from buffer pointer
-// Does NOT check for overflows. Be careful to what you send;
 ssize_t
 rdfl_b_push_read(t_rdfl_buffer *b, int fd, void *ptr, size_t s) {
   ssize_t	nb;
@@ -285,7 +284,7 @@ rdfl_b_push_read(t_rdfl_buffer *b, int fd, void *ptr, size_t s) {
     // EAGAIN E_WOULDBLOCK
     return (ERR_READ);
   }
-  rdfl_b_buffer_size(b, (size_t)nb);
+  rdfl_b_buffer_addsize(b, (size_t)nb);
   return (nb);
 }
 
@@ -323,6 +322,10 @@ rdfl_b_print_buffers(t_rdfl_buffer *b) {
   t_rdfl_b_list		*raw = b->consumer.raw;
   size_t		tmp;
 
+  if (!raw) {
+    printf("\033[0;33mTOT: \033[0m%zu\n" , b->consumer.total);
+    return ;
+  }
   printf("\033[0;33mTOT: \033[0m%zu \033[0;33m"
       "(First TOT: \033[0m%zu\033[0;33m/\033[0m%zu\033[0;33m) "
       "\n\033[1;31m{\033[0m", b->consumer.total,

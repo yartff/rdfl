@@ -7,14 +7,15 @@ test_3__bufferelasticity_tester(void) {
   size_t			i = 0;
   readsize_handler_t		rdfl_read;
   int				tab[] = {
-    50, -10, 30, -10, 200, -45, 51, 1, -10, -59, -190, 50, 42, -1, 1, -4, 5, 0
+    15, -10, -5, 4
   };
 
   rdfl_init(&example);
-  rdfl_set_buffsize(&example, 100);
-  if (rdfl_load_path(&example, "/dev/urandom", RDFL_FORCEREADSIZE, NULL))
+  rdfl_set_buffsize(&example, 5);
+  if (rdfl_load_path(&example, "../notes.txt", RDFL_FORCEREADSIZE | RDFL_FULLEMPTY, NULL))
     return (EXIT_FAILURE);
-  rdfl_read = get_func(RDFL_FORCEREADSIZE);
+  rdfl_printbufferstate(&example);
+  rdfl_read = get_func(RDFL_FORCEREADSIZE | RDFL_FULLEMPTY);
   while (i < (sizeof(tab) / sizeof(*tab))) {
     if (tab[i] < 0)
       rdfl_force_consume_size(&example, -(tab[i]));

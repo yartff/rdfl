@@ -14,8 +14,10 @@ typedef			enum {
   // RDFL_KEEPTRACK	= 1 << 8, Keep line/col infos
   // RDFL_SIGMASK	= 1 << 9, // Use pselect instead
   RDFL_FULLEMPTY	= 1 << 10,
-  // RDFL_READTIMEOUT	= 1 << 11
-  RDFL_LAST		= 1 << 12,
+  // RDFL_READTIMEOUT	= 1 << 11,
+  RDFL_AUTOREAD		= 1 << 12,
+  RDFL_AUTOCLOSE	= 1 << 13,
+  RDFL_LAST		= 1 << 14,
   // vvv : will come with consumer feature (ran in a different thread)
   // RDFL_CONSUMER_THREAD	= (RDFL_NONE + 1) << 1,
 }			e_rdflsettings;
@@ -37,7 +39,9 @@ typedef			enum {
   VAL			= -13,
   VAL_POTENTIALDATA	= -14,
   VAL_TIMEOUT_REACHED	= -15,
-  VAL_LAST_READ_0	= -16
+  VAL_LAST_READ_0	= -16,
+  // If you get this value, pls fill in buffer manually and try again
+  VAL_NEED_DATA		= -17
 }			e_rdflerrors;
 
 #endif			/* !__RDFL_STATUSCODES_H_ */

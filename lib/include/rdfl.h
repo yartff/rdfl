@@ -9,7 +9,11 @@
 
 # define		RDFL_OPT_ISSET(value, opt)	(value & opt)
 # define		RDFL_OPT_SET(value, opt)	(value |= opt)
-# define		RDFL_OPT_UNSET(value, opt)	((RDFL_OPT_ISSET(value, opt) ? value : value ^= opt))
+# define		RDFL_OPT_UNSET(value, opt)	\
+  do { \
+    if (RDFL_OPT_ISSET(value, opt)) value ^= opt; \
+  } while (0);
+
 # define		RDFL_OPT_CONTAINALL(value, opt)	((value & opt) == opt)
 
 typedef			struct {
@@ -27,7 +31,7 @@ typedef			struct {
 
 // Reader Fct
 typedef	ssize_t		(*readsize_handler_t)(t_rdfl *, size_t s);
-int			_read_size(t_rdfl *, size_t);
+ssize_t			_read_size(t_rdfl *, size_t);
 
 typedef	ssize_t		(*readall_handler_t)(t_rdfl *, e_rdflerrors *);
 ssize_t			_read_all_available(t_rdfl *, e_rdflerrors *);

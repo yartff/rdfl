@@ -60,17 +60,13 @@ rdfl_nw_select(int fd_select, fd_set *cpy,
     struct timeval *to,
     ssize_t (*callback)(void *), void *obj) {
   int		ret;
-  nwret_t		val;
 
   ret = select(fd_select, cpy, NULL, NULL, to);
   if (ret == -1)
     return (ERR_SELECT);
   if (ret == 0)
     return (VAL_TIMEOUT_REACHED);
-  val = callback(obj);
-  if (!val)
-    return (ERR_CONNECTION_CLOSED);
-  return (val);
+  return (callback(obj));
 }
 
 nwret_t

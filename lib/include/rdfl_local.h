@@ -10,6 +10,13 @@ typedef			enum {
   RDFL_LOC_NONE		=	RDFL_LAST,
   RDFL_LOC_OPEN		=	RDFL_LOC_NONE << 1,
   RDFL_LOC_ALLOC	=	RDFL_LOC_NONE << 2,
+  RDFL_LOC_REACHED_EOF	=	RDFL_LOC_NONE << 3,
 }			e_rdflsettings_local;
+
+enum {
+  BACC_CB_STOP		= 0,
+  BACC_CB_CONTINUE,
+  BACC_CB_NEEDDATA
+};
 
 #endif			/* !__RDFL_LOCAL_H_ */

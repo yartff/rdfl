@@ -11,7 +11,8 @@ SRC		=		main_test.c				\
 				test_3-buffer-elasticity_tester.c	\
 				test_4-monitoring_reader.c		\
 				test_5-monitoringall_reader.c		\
-				test_6-buffer_access.c#		\
+				test_6-buffer_access.c			\
+				test_7-buffer_access_routines.c#		\
 				test_6-monitoringnoext_reader.c
 
 OBJ		=		$(SRC:.c=.o)

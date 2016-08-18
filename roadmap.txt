@@ -1,0 +1,24 @@
+			NONE	NOEXT	FORCE	ADJUST	ALL	LEGACY	THSAFE	MONI	FEMPTY	AUTOREAD
+_read_size		0	0	1	2+	0	0	2-	0	3+	3+
+_read_monitoring	0	2+	4	0	2+	0	2-	1	3+	0
+_read_noextend		0	1	4	0	0	0	2-	4	3+	3+
+_read_all_available	0	4	4	0	1	0	2-	4	3+	3+
+_read_legacy (TODO)	0	4	4	0	4	1	2-	2-	0	0
+_read_normal		0	4	4	0	4	4	2-	4	3+	3+
+
+0 = Not possible
+1 = Will always be
+2 = Can be
+3 = Can be but makes no difference
+4 = Handled in head column func, can be considered a 0 from line func's pov
+
++ = implemented
+- = not implemented yet
+(only 1, 2 and 3 need to be implemented)
+
+TODO:
+_ RDFL_TRACK (line, col)
+_ SAVE_CONTEXT RESTORE_CONTEXT mechanics
+_ Investigate about O_NONBLOCK on socket
+_ consumers for EOF, range, peek_ndx, peek_pop, ...
+_ Reconsider the impact of allowing data force consume during an RDFL_AUTOREAD routine

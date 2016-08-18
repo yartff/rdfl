@@ -7,5 +7,6 @@ int		test_3__bufferelasticity_tester(void);
 int		test_4__monitoring_reader(void);
 int		test_5__monitoringall_reader(void);
 int		test_6__buffer_access(void);
+int		test_7__buffer_access_routines(void);
 
 #endif		/* !__TESTER_H_ */
