@@ -11,7 +11,9 @@ SRC		=		\
 				$(SRCDIR)rdfl.c				\
 				$(SRCDIR)rdfl_buffer.c			\
 				$(SRCDIR)rdfl_network.c			\
-				$(SRCDIR)rdfl_buffer_access.c			\
+				$(SRCDIR)rdfl_buffer_access.c		\
+				$(SRCDIR)rdfl_consumer_type.c		\
+				$(SRCDIR)rdfl_readBNF.c
 
 OBJ		=		$(SRC:.c=.o)
 

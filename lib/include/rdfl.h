@@ -71,6 +71,7 @@ rdflret_t	rdfl_load_connect(t_rdfl *, const char *, int, e_rdflsettings, e_rdfle
 const char	*handler_typedef_declare(void *ptr);
 void		*get_func(e_rdflsettings);
 void		rdfl_clean(t_rdfl *obj);
+int		rdfl_eofreached(t_rdfl *obj);
 
 int		rdfl_set_timeout(t_rdfl *, ssize_t timeout);
 void		rdfl_set_buffsize(t_rdfl *, ssize_t buffsize);

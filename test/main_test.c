@@ -9,9 +9,10 @@ int	(*test_functions[])(void) = {
   &test_3__bufferelasticity_tester
   &test_4__monitoring_reader,
   &test_5__monitoringall_reader,
-  &test_6__buffer_access
+  &test_6__buffer_access,
+  &test_7__buffer_access_routines,
   */
-  &test_7__buffer_access_routines
+  &test_8__BNFparsing
 };
 
 // TODO test_5-errorcases_tester.c

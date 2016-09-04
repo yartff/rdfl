@@ -17,9 +17,11 @@ typedef			enum {
   // RDFL_READTIMEOUT	= 1 << 11,
   RDFL_AUTOREAD		= 1 << 12,
   RDFL_AUTOCLOSE	= 1 << 13,
-  RDFL_LAST		= 1 << 14,
+  // Allows the parsed bnf to use rdfl builtins consumers
+  RDFL_ALLOWBUILTINS	= 1 << 14,
   // vvv : will come with consumer feature (ran in a different thread)
   // RDFL_CONSUMER_THREAD	= (RDFL_NONE + 1) << 1,
+  RDFL_LAST		= 1 << 16,
 }			e_rdflsettings;
 
 typedef			enum {
@@ -36,12 +38,25 @@ typedef			enum {
   ERR_NOT_IMPLEMENTED	= -10,
   ERR_CONNECTION	= -11,
   ERR_CONNECTION_CLOSED	= -12,
-  VAL			= -13,
-  VAL_POTENTIALDATA	= -14,
-  VAL_TIMEOUT_REACHED	= -15,
-  VAL_LAST_READ_0	= -16,
+  VCSM			= -100,
+  VCSM_INCOMPLETE_TOKEN	= -101,
+  VCSM_UNMARKED_TOKEN	= -102,
+  VCSM_REACHED_EOF	= -103,
+  VAL			= -200,
+  VAL_POTENTIALDATA	= -201,
+  VAL_TIMEOUT_REACHED	= -202,
+  VAL_LAST_READ_0	= -203,
   // If you get this value, pls fill in buffer manually and try again
-  VAL_NEED_DATA		= -17
+  VAL_NEED_DATA		= -204
 }			e_rdflerrors;
+
+// RDFL_P_CONTEXTS
+typedef				enum {
+  RDFL_P_NONE			= 0,
+  RDFL_P_NULLTERMINATED		= 1 << 0,
+  // will assume when a token matches a rule, not any other rules can be applied
+  RDFL_P_CONSUME		= 1 << 1,
+  RDFL_P_LAST			= 1 << 2,
+}				e_bacc_options;
 
 #endif			/* !__RDFL_STATUSCODES_H_ */

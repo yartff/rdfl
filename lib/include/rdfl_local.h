@@ -3,7 +3,7 @@
 
 # include		"rdfl_status_codes.h"
 
-# define		RDFL_DEFAULT_BUFFSIZE	4096 // (bytes) // TODO pagesize() ?
+# define		RDFL_DEFAULT_BUFFSIZE	4096 // (bytes)
 # define		RDFL_DEFAULT_TIMEOUT	-1 // (blocking reads)
 
 typedef			enum {
@@ -16,7 +16,7 @@ typedef			enum {
 enum {
   BACC_CB_STOP		= 0,
   BACC_CB_CONTINUE,
-  BACC_CB_NEEDDATA
+  BACC_CB_NEEDDATA,
 };
 
 #endif			/* !__RDFL_LOCAL_H_ */

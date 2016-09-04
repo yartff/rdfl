@@ -114,6 +114,9 @@ rdfl_force_consume_size(t_rdfl *obj, size_t s) {
     rdfl_b_fullclean_if_empty(&obj->data);
 }
 
+inline int	rdfl_eofreached(t_rdfl *obj)
+{ return (RDFL_OPT_ISSET(obj->settings, RDFL_LOC_REACHED_EOF)); }
+
 // API Readers
 //
 ssize_t

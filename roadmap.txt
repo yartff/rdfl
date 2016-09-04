@@ -22,3 +22,4 @@ _ SAVE_CONTEXT RESTORE_CONTEXT mechanics
 _ Investigate about O_NONBLOCK on socket
 _ consumers for EOF, range, peek_ndx, peek_pop, ...
 _ Reconsider the impact of allowing data force consume during an RDFL_AUTOREAD routine
+_ LAST_FETCH_CONTAINS
