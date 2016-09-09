@@ -23,35 +23,33 @@ read_rule_content() {
   read_expr();
 }
 
-void
-read_production(t_rdfl *obj...) {
-  read_rule_name(); // '<' BT_identifier '>'
-  read_operator("::=");
-  read_rule_content();
-}
+#endif
+int
+read_production(t_rdfl *obj) {
+  char		*extract = NULL;
 
-void
-rdfl_readBNF(t_rdfl *obj) {
-  t_rdfl_csm		consumer;
-
-  rdfl_consumer_init(&consumer, RDFL_P_CONSUME | RDFL_P_AUTOCLEAR_BLANKS);
-  rdfl_consumer_add_commentNL(&consumer, ";");
-
-  while (read_production(&obj, &consumer));
-
+  fprintf(stderr, "readString: %zd\n", rdfl_ct_readString(obj, ((void **)&extract), RDFL_P_NULLTERMINATED | RDFL_P_CONSUME));
+  if (extract) {
+    fprintf(stdout, "=========== FINAL STRING: %s\n", extract);
+    free(extract);
+    return (1);
+  }
   return (0);
 }
-#endif
 
 int
 rdfl_readBNF(t_rdfl *obj) {
-  void *extract;
-  ssize_t i;
-
-  //fprintf(stderr, "%d\n", rdfl_bacc_readptr(obj, "\"1234567890\"\nabcd", 10));
-  if (rdfl_ct_readString(obj, &extract, RDFL_P_CONSUME | RDFL_P_NULLTERMINATED) > 0) {
-    fprintf(stderr, "Extract: [%p]\n", (char *)extract);
-    free(extract);
+  RDFL_OPT_SET(obj->settings, RDFL_AUTOCLEAR_BLANKS);
+  if (rdfl_set_comment(obj, ";", "\n") != ERR_NONE
+      || rdfl_set_comment(obj, "/*", "*/") != ERR_NONE)
+    return (EXIT_FAILURE);
+  while (read_production(obj)) {
+    /*
+    fprintf(stderr,"\n-----------------\n");
+    rdfl_printbufferstate(obj);
+    */
   }
-  return (1);
+  fprintf(stderr,"\nEND\n");
+  rdfl_printbufferstate(obj);
+  return (EXIT_SUCCESS);
 }

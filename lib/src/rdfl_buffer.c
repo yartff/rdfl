@@ -173,17 +173,34 @@ rdfl_b_next_chunk(t_rdfl_buffer *b, size_t *s) {
 // both consumer.ndx and buffer.ndx goes back to 0 << TODO to reconsider
 void
 rdfl_b_consume_size(t_rdfl_buffer *b, size_t value) {
+
+  // TODO do we allow consuming through skip? (#ConsumeVsContexts)
+  // >> yes, concerned contexts will be dropped.
+  // if RDFL_CONTEXT alone
+  //   skip will correspond to the last context. It can't be manually changed
+  //   contexts are stored as sums (2, 2, 2) sets a context every 2 bytes
+  // if RDFL_CONSUME
+  //   skip will be adjusted (skip -= consume_size)
+  //   if RDFL_CONTEXT
+  //     contexts are dropped with the content
+  //
+  value += b->consumer.skip;
+  // Drop all contexts
+  //
+
   if (value > b->consumer.total) {
     value = b->consumer.total;
   }
   while (value) {
     if (value >= b->consumer.l_total) {
       value -= b->consumer.l_total;
+      b->consumer.skip -= b->consumer.l_total;
       rdfl_b_del_restat_butfirst(b);
     }
     else {
       b->consumer.l_total -= value;
       b->consumer.total -= value;
+      b->consumer.skip = 0;
       b->consumer.ndx = (b->consumer.ndx + value) % b->consumer.raw->size;
       value = 0;
       return ;
@@ -288,7 +305,16 @@ rdfl_b_push_read(t_rdfl_buffer *b, int fd, void *ptr, size_t s) {
   return (nb);
 }
 
+int
+rdfl_b_set_skip(t_rdfl_buffer *b, size_t value) {
+  if (value >= b->consumer.total)
+    return (ERR_OUTOFBOUND);
+  b->consumer.skip = value;
+  return (ERR_NONE);
+}
 
+
+// TODO #ifdef DEVEL
 // Debugging
 //
 static
@@ -317,6 +343,7 @@ print_buffer(const char *str, size_t count) {
 }
 
 // TODO display size of each buffer
+// TODO display contexts
 void
 rdfl_b_print_buffers(t_rdfl_buffer *b) {
   t_rdfl_b_list		*raw = b->consumer.raw;
@@ -327,9 +354,9 @@ rdfl_b_print_buffers(t_rdfl_buffer *b) {
     return ;
   }
   printf("\033[0;33mTOT: \033[0m%zu \033[0;33m"
-      "(First TOT: \033[0m%zu\033[0;33m/\033[0m%zu\033[0;33m) "
+      "(First TOT: \033[0m%zu\033[0;33m/\033[0m%zu\033[0;33m) -> %zu"
       "\n\033[1;31m{\033[0m", b->consumer.total,
-      b->consumer.l_total, b->consumer.raw->size);
+      b->consumer.l_total, b->consumer.raw->size, b->consumer.skip);
   while (raw) {
     if (raw == b->consumer.raw) {
       printf("\033[1;31m[\033[0m");

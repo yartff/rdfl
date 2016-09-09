@@ -250,6 +250,17 @@ _rdfl_close(t_rdfl *obj) {
   RDFL_OPT_SET(obj->settings, RDFL_LOC_REACHED_EOF);
 }
 
+static
+void
+_rdfl_comments_clean(t_comments *obj) {
+  if (!obj)
+    return ;
+  _rdfl_comments_clean(obj->next);
+  free(obj->beg);
+  free(obj->end);
+  free(obj);
+}
+
 void
 rdfl_clean(t_rdfl *obj) {
   if (!obj) return ;
@@ -257,6 +268,7 @@ rdfl_clean(t_rdfl *obj) {
     rdfl_nw_clean(obj->nw);
     free(obj->nw);
   }
+  _rdfl_comments_clean(obj->v.cmts);
   _rdfl_close(obj);
   rdfl_buffer_clean(&obj->data);
   if (RDFL_OPT_ISSET(obj->settings, RDFL_LOC_ALLOC))
@@ -403,3 +415,30 @@ int	rdfl_set_timeout(t_rdfl *r, ssize_t timeout) {
 }
 void	rdfl_set_buffsize(t_rdfl *r, ssize_t buffsize)
 { r->v.buffsize = ((buffsize == 0) ? RDFL_DEFAULT_BUFFSIZE : buffsize); }
+
+int	rdfl_set_skip(t_rdfl *r, size_t skip) {
+#ifdef		DEVEL
+  if (RDFL_OPT_ISSET(r->settings, RDFL_CONTEXT))
+    return (ERR_BADFLAGS);
+#endif
+  return (rdfl_b_set_skip(&r->data, skip));
+}
+
+int
+rdfl_set_comment(t_rdfl *r, const char *begin, const char *end) {
+  t_comments		*new;
+  char			*strb = NULL, *stre;
+
+  if (!(new = malloc(sizeof(*new)))
+      || !(strb = strdup(begin))
+      || !(stre = strdup(end))) {
+    free(new);
+    free(strb);
+    return (ERR_MEMORY);
+  }
+  new->next = r->v.cmts;
+  r->v.cmts = new;
+  new->beg = strb;
+  new->end = stre;
+  return (ERR_NONE);
+}

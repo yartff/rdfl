@@ -17,6 +17,7 @@ enum {
   BACC_CB_STOP		= 0,
   BACC_CB_CONTINUE,
   BACC_CB_NEEDDATA,
+  BACC_CB_NOACTION,
 };
 
 #endif			/* !__RDFL_LOCAL_H_ */

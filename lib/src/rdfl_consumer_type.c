@@ -1,3 +1,4 @@
+#include		<string.h>
 #include		"rdfl_buffer_access.h"
 #include		"rdfl_consumer.h"
 
@@ -53,23 +54,108 @@ _cb__ct_readString_cstyle(void *ptr, size_t s, void *data) {
 }
 #undef		PTYPE
 
+#define		PTYPE(p)	((struct s_ct_readAllContained *)p)
+struct		s_ct_readAllContained {
+  void		*content;
+  size_t	ctsize;
+  ssize_t	return_value;
+};
+
+static
+int
+_cb__ct_readAllContained(void *ptr, size_t s, void *data) { // rdfl_ct_readAllContained
+  size_t	to_s = 0, n;
+
+  while (to_s < s) {
+    n = 0;
+    while (n < PTYPE(data)->ctsize) {
+      if (((char *)ptr)[to_s] == ((char *)PTYPE(data)->content)[n]) {
+	++PTYPE(data)->return_value;
+	break ;
+      }
+      ++n;
+    }
+    if (n == PTYPE(data)->ctsize) {
+      return (BACC_CB_STOP);
+    }
+    ++to_s;
+  }
+  return (BACC_CB_NEEDDATA);
+}
+#undef		PTYPE
+
 ssize_t
 rdfl_ct_readString(t_rdfl *obj, void **extract, e_bacc_options bopt) {
   struct s_ct_readString	data;
 
   data.quote = (RDFL_OPT_ISSET(bopt, RDFL_PSTR_SIMPLE_QUOTE_STR) ? '\'' : '"');
   _readString_init(&data);
-  if (_iterate_chunk(obj, &_cb__ct_readString_legacy, &data, 0) <= 0)
-    return (VCSM_INCOMPLETE_TOKEN);
+  if (_iterate_chunk(obj, &_cb__ct_readString_legacy, &data, bopt) < 0) return (VCSM_INCOMPLETE_TOKEN);
   if (!data.total) return (0);
-  if (extract) *extract = rdfl_bacc_getcontent(obj, NULL, data.return_value, bopt);
-  else if (RDFL_OPT_ISSET(bopt, RDFL_P_CONSUME))
-    rdfl_b_consume_size(&obj->data, data.return_value);
+  _iterate_extract(obj, extract, data.return_value, bopt);
   return (data.return_value);
 }
 
 ssize_t
 rdfl_ct_readAllContained(t_rdfl *obj, void **extract, const char *content, e_bacc_options bopt) {
-  (void)obj, (void)extract, (void)content, (void)bopt;
-  return (0);
+  struct s_ct_readAllContained	data;
+
+  data.return_value = 0;
+  data.content = (void *)content;
+  data.ctsize = strlen(content);
+  if (_iterate_chunk(obj, &_cb__ct_readAllContained, &data, bopt) < 0) {
+    return (VCSM_INCOMPLETE_TOKEN);
+  }
+  _iterate_extract(obj, extract, data.return_value, bopt);
+  return (data.return_value);
+}
+
+#define		PTYPE(p)	((struct s_ct_readUntil *)p)
+struct		s_ct_readUntil {
+  void		*ptr;
+  size_t	s;
+  ssize_t	return_value;
+  size_t	rebase_skip;
+  t_rdfl	*obj;
+};
+
+int
+_cb__ct_readUntil(void *ptr, size_t s, void *data) { // rdfl_ct_readUntil
+  size_t	i = 0;
+  (void)ptr;
+
+  PTYPE(data)->obj->data.consumer.skip = PTYPE(data)->rebase_skip
+    + PTYPE(data)->return_value;
+  while (i < s) {
+    if (rdfl_bacc_readptr(PTYPE(data)->obj, PTYPE(data)->ptr,
+	  PTYPE(data)->s, RDFL_P_IGNORE_PREDATA)) {
+      PTYPE(data)->obj->data.consumer.skip = PTYPE(data)->rebase_skip;
+      PTYPE(data)->return_value += PTYPE(data)->s;
+      return (BACC_CB_STOP);
+    }
+    ++PTYPE(data)->obj->data.consumer.skip;
+    ++PTYPE(data)->return_value;
+    ++i;
+  }
+  PTYPE(data)->obj->data.consumer.skip = PTYPE(data)->rebase_skip;
+  return (BACC_CB_NEEDDATA);
+}
+#undef		PTYPE
+
+ssize_t
+rdfl_ct_readUntil(t_rdfl *obj, void *ptr, size_t s, e_bacc_options opt) {
+  struct s_ct_readUntil		data;
+
+  data.return_value = 0;
+  data.ptr = ptr;
+  data.s = s;
+  data.obj = obj;
+  data.rebase_skip = obj->data.consumer.skip;
+  if (_iterate_chunk(obj, &_cb__ct_readUntil, &data, opt) < 0) {
+    obj->data.consumer.skip = data.rebase_skip;
+    return (VCSM_INCOMPLETE_TOKEN);
+  }
+  obj->data.consumer.skip = data.rebase_skip;
+  _iterate_extract(obj, NULL, data.return_value, opt);
+  return (data.return_value);
 }

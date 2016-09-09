@@ -8,17 +8,26 @@
 # include		"rdfl_status_codes.h"
 
 # define		RDFL_OPT_ISSET(value, opt)	(value & opt)
+// Don't change settings at runtime. No checks made for optimization purposes
 # define		RDFL_OPT_SET(value, opt)	(value |= opt)
 # define		RDFL_OPT_UNSET(value, opt)	\
   do { \
     if (RDFL_OPT_ISSET(value, opt)) value ^= opt; \
   } while (0);
+#define			RDFL_OPT_CANCEL(value, opt)	(value & ~opt)
 
 # define		RDFL_OPT_CONTAINALL(value, opt)	((value & opt) == opt)
+
+typedef struct		s_comments {
+  char			*beg;
+  char			*end;
+  struct s_comments	*next;
+}			t_comments;
 
 typedef			struct {
   ssize_t		timeout;
   ssize_t		buffsize;
+  t_comments		*cmts;
 }			t_rdfl_values;
 
 typedef			struct {
@@ -75,9 +84,13 @@ int		rdfl_eofreached(t_rdfl *obj);
 
 int		rdfl_set_timeout(t_rdfl *, ssize_t timeout);
 void		rdfl_set_buffsize(t_rdfl *, ssize_t buffsize);
+int		rdfl_set_skip(t_rdfl *, size_t value);
 void		*rdfl_flush_buffers_alloc(t_rdfl *obj, ssize_t *count_value);
 void		*rdfl_getinplace_next_chunk(t_rdfl *, size_t *, size_t *);
 void		rdfl_force_consume_size(t_rdfl *obj, size_t s);
 void		rdfl_printbufferstate(t_rdfl *obj);
 
+int		rdfl_set_comment_ml(t_rdfl *, const char *, const char *);
+int		rdfl_set_comment(t_rdfl *, const char *, const char *);
+// TODO rdfl_inputuserdata(t_rdfl *obj, void *, size_t s);
 #endif			/* !__RDFL_H_ */

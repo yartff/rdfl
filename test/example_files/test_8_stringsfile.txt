@@ -1,0 +1,9 @@
+     "digit" ;aaa
+"::=" /*___________________________
+
+"COMMENTED STRING, SHOULD NOT APPEAR"
+
+*/
+			 	 	"ABCD"		 	
+		 ; "COMMENTED STRING :) SAME SHIT
+"test"should remain in buffers

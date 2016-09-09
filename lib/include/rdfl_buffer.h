@@ -1,8 +1,18 @@
-#ifndef			__RDFL_BUFFER_H_
-# define		__RDFL_BUFFER_H_
+#ifndef		__RDFL_BUFFER_H_
+# define	__RDFL_BUFFER_H_
 
 # define	RDFL_IS_ASCII_PRINTABLECHAR(c) ((c) >= ' ' && (c) <= '~')
 # define	RDFL_IS_ASCII_NODISPLAYCHAR(c) (((c) == '\n') || ((c) == '\t'))
+
+typedef struct		s_ctxstack {
+  size_t		value;
+  struct s_ctxstack	*next;
+}			t_ctxstack;
+
+typedef struct		{
+  size_t		total;
+  t_ctxstack		*stack;
+}			t_rdfl_contexts;
 
 typedef struct		s_rdfl_b_list {
   void			*data;
@@ -18,13 +28,13 @@ typedef struct		{
 typedef struct		{
   t_rdfl_b_list		*raw;
   size_t		ndx;
+  size_t		skip;
   size_t		l_total;
   size_t		total;
+  t_rdfl_contexts	*ctx;
 }			t_rdfl_cm;
 
-// the first shall never be filled again if a next exists
-// it is destroyed when empty
-typedef			struct {
+typedef struct		{
   t_rdfl_bm		buffer;
   t_rdfl_cm		consumer;
 }			t_rdfl_buffer;
@@ -39,6 +49,7 @@ void		rdfl_b_fullclean_if_empty(t_rdfl_buffer *);
 void		*rdfl_b_buffer_getchunk(t_rdfl_buffer *, size_t *);
 void		*rdfl_b_buffer_getchunk_extend(t_rdfl_buffer *, size_t *, size_t);
 ssize_t		rdfl_b_push_read(t_rdfl_buffer *, int , void *, size_t);
+int		rdfl_b_set_skip(t_rdfl_buffer *, size_t);
 
 // Consumer
 void		*rdfl_b_next_chunk(t_rdfl_buffer *, size_t *);
