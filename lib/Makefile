@@ -25,8 +25,9 @@ CFLAGS		+=		-finline-functions
 CFLAGS		+=		-I$(INCDIR)
 CFLAGS		+=		-D_POSIX_C_SOURCE
 CFLAGS		+=		-D_POSIX_SOURCE
+CFLAGS		+=		-D_BSD_SOURCE
 CFLAGS		+=		-D_DEFAULT_SOURCE
-# CFLAGS	+=		-g3
+CFLAGS	+=		-g3
 # LD_FLAGS	+=		-lrt
 
 $(NOLN_NAME):		$(OBJ)

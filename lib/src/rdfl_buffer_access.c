@@ -89,10 +89,15 @@ _iterate_chunk_routine(t_rdfl *obj, int (*callback)(void *, size_t, void *), voi
 auto_it:
     if (RDFL_OPT_ISSET(obj->settings, RDFL_AUTOREAD))
       return (_iterate_taildata_auto(obj, callback, data));
-    return (rdfl_eofreached(obj) ? VCSM_INCOMPLETE_TOKEN : VCSM_UNMARKED_TOKEN);
+    return (rdfl_eofreached(obj) ? VCSM_REACHED_EOF : VCSM_INCOMPLETE_TOKEN);
+    // TODO make sure this is handled in calling funcs
   }
   return (ERR_NONE);
 }
+
+// REACHED_EOF
+// INCOMPLETE
+// UNMARKED
 
 static
 ssize_t
@@ -111,7 +116,7 @@ _handle_comment_loop(t_rdfl *obj, e_bacc_options opt, t_comments *l) {
   if ((ret = rdfl_bacc_readptr(obj, l->beg, len, opt)) <= 0)
     return (ret);
   obj->data.consumer.skip += len;
-  ret = rdfl_ct_readUntil(obj, l->end, strlen(l->end), opt | RDFL_P_IGNORE_PREDATA);
+  ret = rdfl_ct_readUntil(obj, NULL, l->end, strlen(l->end), opt | RDFL_P_IGNORE_PREDATA);
   obj->data.consumer.skip -= len;
   if (ret <= 0)
     return (ret);
@@ -209,6 +214,7 @@ _iterate_extract(t_rdfl *obj, void **extract, ssize_t s, e_bacc_options opt) {
   return (ERR_NONE);
 }
 
+// Methods
 #define		PTYPE(p)	((struct s_bacc_getallcontent_data *)p)
 struct		s_bacc_getallcontent_data {
   void		*ptr;
@@ -227,6 +233,23 @@ _cb__bacc_getallcontent(void *ptr, size_t s, void *data) { // rdfl_bacc_getconte
   return (BACC_CB_CONTINUE);
 }
 #undef		PTYPE
+
+void *
+rdfl_bacc_getcontent(t_rdfl *obj, size_t *s_p, size_t c, e_bacc_options e) {
+  struct s_bacc_getallcontent_data	data;
+  int					opt;
+
+  opt = (RDFL_OPT_ISSET(e, RDFL_P_NULLTERMINATED) != 0);
+  if (!obj->data.consumer.total) return (NULL);
+  data.c = ((c != 0 && c < obj->data.consumer.total) ? c : obj->data.consumer.total) ;
+  if (!(data.ptr = malloc(data.c + opt)))
+    return (NULL);
+  data.offset = 0;
+  _iterate_chunk(obj, &_cb__bacc_getallcontent, &data, e);
+  if (opt) ((char *)data.ptr)[data.offset] = 0;
+  if (s_p) *s_p = data.c + opt;
+  return (data.ptr);
+}
 
 #define		PTYPE(p)	((struct s_bacc_cmp_data *)p)
 struct		s_bacc_cmp_data {
@@ -253,42 +276,6 @@ _cb__bacc_cmp(void *ptr, size_t s, void *data) { // _rdfl_bacc_cycle_cmp
   return (PTYPE(data)->cbret);
 }
 #undef		PTYPE
-
-#define		PTYPE(p)	((struct s_bacc_ndx_data *)p)
-struct		s_bacc_ndx_data {
-  size_t	ndx;
-  int		return_value;
-};
-
-static
-int
-_cb__bacc_ndx(void *ptr, size_t s, void *data) { // rdfl_bacc_ndx
-  if (PTYPE(data)->ndx >= s) {
-    PTYPE(data)->ndx -= s;
-    return (BACC_CB_CONTINUE);
-  }
-  PTYPE(data)->return_value = ((char *)ptr)[PTYPE(data)->ndx];
-  return (BACC_CB_STOP);
-}
-#undef		PTYPE
-
-// Public Access
-void *
-rdfl_bacc_getcontent(t_rdfl *obj, size_t *s_p, size_t c, e_bacc_options e) {
-  struct s_bacc_getallcontent_data	data;
-  int					opt;
-
-  opt = (RDFL_OPT_ISSET(e, RDFL_P_NULLTERMINATED) != 0);
-  if (!obj->data.consumer.total) return (NULL);
-  data.c = ((c != 0 && c < obj->data.consumer.total) ? c : obj->data.consumer.total) ;
-  if (!(data.ptr = malloc(data.c + opt)))
-    return (NULL);
-  data.offset = 0;
-  _iterate_chunk(obj, &_cb__bacc_getallcontent, &data, e);
-  if (opt) ((char *)data.ptr)[data.offset] = 0;
-  if (s_p) *s_p = data.c + opt;
-  return (data.ptr);
-}
 
 static
 int
@@ -321,6 +308,24 @@ size_t
 rdfl_bacc_info_total(t_rdfl *obj) {
   return (obj->data.consumer.total);
 }
+
+#define		PTYPE(p)	((struct s_bacc_ndx_data *)p)
+struct		s_bacc_ndx_data {
+  size_t	ndx;
+  int		return_value;
+};
+
+static
+int
+_cb__bacc_ndx(void *ptr, size_t s, void *data) { // rdfl_bacc_ndx
+  if (PTYPE(data)->ndx >= s) {
+    PTYPE(data)->ndx -= s;
+    return (BACC_CB_CONTINUE);
+  }
+  PTYPE(data)->return_value = ((char *)ptr)[PTYPE(data)->ndx];
+  return (BACC_CB_STOP);
+}
+#undef		PTYPE
 
 int	// corresponds to 1 byte
 rdfl_bacc_ndx(t_rdfl *obj, size_t n) {

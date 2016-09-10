@@ -24,6 +24,7 @@ read_rule_content() {
 }
 
 #endif
+
 int
 read_production(t_rdfl *obj) {
   char		*extract = NULL;
