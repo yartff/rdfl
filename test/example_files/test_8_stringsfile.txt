@@ -1,5 +1,5 @@
-     "digit" ;aaa
-"::=" /*___________________________
+     digit ;aaa
+::= /*___________________________
 
 "COMMENTED STRING, SHOULD NOT APPEAR"
 

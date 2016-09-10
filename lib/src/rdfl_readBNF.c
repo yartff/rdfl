@@ -25,17 +25,25 @@ read_rule_content() {
 
 #endif
 
+#define		OP_RULE			"::="
+#define		OP_OR			"|"
+#define		READ_OPE(obj, c, opt)	(rdfl_bacc_readptr(obj, c, sizeof(c) - 1, opt))
 int
 read_production(t_rdfl *obj) {
-  char		*extract = NULL;
+  e_bacc_options	opt = RDFL_P_NULLTERMINATED | RDFL_P_CONSUME;
+  char			*extract = NULL;
+  int			ret;
 
-  fprintf(stderr, "readString: %zd\n", rdfl_ct_readString(obj, ((void **)&extract), RDFL_P_NULLTERMINATED | RDFL_P_CONSUME));
-  if (extract) {
-    fprintf(stdout, "=========== FINAL STRING: %s\n", extract);
+  if (rdfl_ct_readIdentifier(obj, ((void **)&extract), opt) <= 0
+    || !extract)
+    return (EXIT_FAILURE);
+  if ((ret = READ_OPE(obj, OP_RULE, opt)) <= 0
+     /* || (ret = read_or_expression(obj)) <= 0*/) {
     free(extract);
-    return (1);
+    return (EXIT_FAILURE);
   }
-  return (0);
+  free(extract);
+  return (EXIT_SUCCESS);
 }
 
 int
@@ -44,13 +52,12 @@ rdfl_readBNF(t_rdfl *obj) {
   if (rdfl_set_comment(obj, ";", "\n") != ERR_NONE
       || rdfl_set_comment(obj, "/*", "*/") != ERR_NONE)
     return (EXIT_FAILURE);
-  while (read_production(obj)) {
+  while (read_production(obj) == EXIT_SUCCESS) {
     /*
     fprintf(stderr,"\n-----------------\n");
     rdfl_printbufferstate(obj);
     */
   }
-  fprintf(stderr,"\nEND\n");
   rdfl_printbufferstate(obj);
   return (EXIT_SUCCESS);
 }

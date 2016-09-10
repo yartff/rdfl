@@ -152,6 +152,8 @@ rdfl_ct_readUntil(t_rdfl *obj, void **extract, void *ptr, size_t s, e_bacc_optio
   struct s_ct_readUntil		data;
   int				ret;
 
+  // TODO: do an optimisation for 1 byte ptr
+  // readUntilChar();
   data.return_value = 0;
   data.ptr = ptr;
   data.s = s;
@@ -167,7 +169,6 @@ rdfl_ct_readUntil(t_rdfl *obj, void **extract, void *ptr, size_t s, e_bacc_optio
   _iterate_extract(obj, extract, data.return_value, opt);
   return (data.return_value);
 }
-#if 0
 
 #define		PTYPE(p)	((struct s_ct_readIdentifier *)p)
 struct		s_ct_readIdentifier {
@@ -194,7 +195,7 @@ _cb__ct_readIdentifier(void *ptr, size_t s, void *data) { // rdfl_ct_readIdentif
       return (BACC_CB_STOP);
   }
   while (i < s) {
-    if (!IDENTIFIER_N_CHAR(((char *)ptr)[s])) {
+    if (!IDENTIFIER_N_CHAR(((char *)ptr)[i])) {
       return (BACC_CB_STOP);
     }
     ++PTYPE(data)->return_value;
@@ -210,7 +211,7 @@ rdfl_ct_readIdentifier(t_rdfl *obj, void **extract, e_bacc_options opt) {
   int				ret;
 
   data.return_value = 0;
-  if ((ret = _iterate_chunk(obj, &_cb__ct_readUntil, &data, opt)) < 0) {
+  if ((ret = _iterate_chunk(obj, &_cb__ct_readIdentifier, &data, opt)) < 0) {
     if (ret == VCSM_REACHED_EOF)
       return (data.return_value);
     return (VCSM_INCOMPLETE_TOKEN);
@@ -218,4 +219,3 @@ rdfl_ct_readIdentifier(t_rdfl *obj, void **extract, e_bacc_options opt) {
   _iterate_extract(obj, extract, data.return_value, opt);
   return (data.return_value);
 }
-#endif

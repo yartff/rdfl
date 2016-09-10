@@ -183,7 +183,7 @@ _iterate_chunk(t_rdfl *obj, int (*callback)(void *, size_t, void *), void *data,
   if ((save = _handle_predata(obj, opt)) < 0) {
     return (save);
   }
-  // obj->data.consumer.skip += save;
+  // TODO consume_size(0); ??
   if (RDFL_OPT_ISSET(obj->settings, RDFL_CONTEXT)) {
     if (RDFL_OPT_ISSET(opt, RDFL_P_SETCONTEXT)) {
       if ((ret = rdfl_shiftcontext(obj, 0)) < 0)
@@ -281,6 +281,7 @@ static
 int
 _rdfl_bacc_cycle_cmp(t_rdfl *obj, void *ptr, size_t s, int cbret, e_bacc_options opt) {
   struct s_bacc_cmp_data	data;
+  int				ret;
 
   if ((data.cbret = cbret) != BACC_CB_NEEDDATA && s > obj->data.consumer.total)
     return (0);
@@ -288,9 +289,15 @@ _rdfl_bacc_cycle_cmp(t_rdfl *obj, void *ptr, size_t s, int cbret, e_bacc_options
   data.ptr = ptr;
   data.offset = 0;
   data.return_value = 0;
-  if (_iterate_chunk(obj, &_cb__bacc_cmp, &data, opt) == VCSM_REACHED_EOF) {
-    return (data.return_value ? VCSM_INCOMPLETE_TOKEN : ERR_NONE);
+  rdfl_printbufferstate(obj);
+  if ((ret = _iterate_chunk(obj, &_cb__bacc_cmp, &data, opt)) <= 0) {
+    if (VCSM_REACHED_EOF) {
+      _iterate_extract(obj, NULL, data.return_value * s, opt);
+      return (data.return_value);
+    }
+    return (ret);
   }
+  _iterate_extract(obj, NULL, data.return_value * s, opt);
   return (data.return_value);
 }
 
@@ -330,9 +337,12 @@ _cb__bacc_ndx(void *ptr, size_t s, void *data) { // rdfl_bacc_ndx
 int	// corresponds to 1 byte
 rdfl_bacc_ndx(t_rdfl *obj, size_t n) {
   struct s_bacc_ndx_data	data;
+  int				ret;
+
   data.ndx = n;
   data.return_value = 0;
-  _iterate_chunk(obj, &_cb__bacc_ndx, &data, 0);
+  // TODO ret
+  ret = _iterate_chunk(obj, &_cb__bacc_ndx, &data, 0);
+  (void)ret;
   return (data.return_value);
 }
-
