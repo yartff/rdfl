@@ -165,5 +165,5 @@ pipeline '|' newline_list pipeline
 
 time_opt ::= '-p' ;
 
-timespec ::=  time
-|  time time_opt;
+timespec ::=  "time"
+|  "time" time_opt;

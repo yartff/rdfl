@@ -3,6 +3,7 @@
 
 typedef			enum {
   FACT_RULE		= 0,
+  FACT_RULE_LINKED,
   FACT_LITERAL,
   // help with contexts?
   FACT_EXPR_OPT,
@@ -20,7 +21,7 @@ typedef struct		sl_fact {
   e_fact_type		type;
   struct sl_fact	*next;
   // Either one of these:
-  // - tl_prod		*;
+  // - t_rdfl_bnf	*;
   // - char		*;
   // - tl_orexpr	*;
   void			*target;

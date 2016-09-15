@@ -15,6 +15,63 @@
 #define		OP_GRP_END		")"
 #define		READ_OPE(obj, c, opt)	(rdfl_bacc_readptr(obj, c, sizeof(c) - 1, opt) > 0)
 
+static int _link_exprs(t_rdfl_bnf *tmp, tl_orexpr *);
+static
+t_rdfl_bnf *
+_seek_target(t_rdfl_bnf *bnf, char *id) {
+  while (bnf) {
+    if (!strcmp(bnf->identifier, id)) {
+      free(id);
+      return (bnf);
+    }
+    bnf = bnf->next;
+  }
+  free(id);
+  return (NULL);
+}
+
+static
+int
+_link_target(t_rdfl_bnf *tmp, tl_fact *facts) {
+  while (facts) {
+    if (facts->type == FACT_RULE) {
+      facts->type = FACT_RULE_LINKED;
+      if (!(facts->target = (void *)_seek_target(tmp, ((char *)facts->target))))
+	return (EXIT_FAILURE);
+    }
+    else if (facts->type >= FACT_EXPR_OPT) {
+      if (_link_exprs(tmp, ((tl_orexpr *)facts->target)) == EXIT_FAILURE)
+	return (EXIT_FAILURE);
+    }
+    facts = facts->next;
+  }
+  return (EXIT_SUCCESS);
+}
+
+static
+int
+_link_exprs(t_rdfl_bnf *tmp, tl_orexpr *expr) {
+  while (expr) {
+    if (_link_target(tmp, expr->factors) == EXIT_FAILURE)
+      return (EXIT_FAILURE);
+    expr = expr->next;
+  }
+  return (EXIT_SUCCESS);
+}
+
+static
+int
+_link_factors(t_rdfl_bnf *tmp) {
+  t_rdfl_bnf	*bnf = tmp;
+
+  while (bnf) {
+    if (_link_exprs(tmp, bnf->exprs) == EXIT_FAILURE)
+      return (EXIT_FAILURE);
+    bnf = bnf->next;
+  }
+  return (EXIT_SUCCESS);
+}
+
 static const e_bacc_options	OPTS = RDFL_P_NULLTERMINATED | RDFL_P_CONSUME;
 static tl_orexpr		*_read_or_expression(t_rdfl *obj);
 static void			_free_rule(tl_orexpr *exprs);
@@ -156,6 +213,10 @@ rdfl_readBNF(t_rdfl *obj) {
   }
   if (!rdfl_eofreached(obj))
     return (NULL);
+  if (_link_factors(productions) == EXIT_FAILURE) {
+    rdfl_freeBNF(productions);
+    return (NULL);
+  }
   return (productions);
 }
 
@@ -167,9 +228,9 @@ _free_factors(tl_fact *facts) {
   while (facts) {
     fact_tmp = facts;
     facts = facts->next;
-    if ((fact_tmp->type == FACT_RULE) || (fact_tmp->type == FACT_LITERAL))
+    if (fact_tmp->type == FACT_RULE || fact_tmp->type == FACT_LITERAL)
       free(fact_tmp->target);
-    else
+    else if (fact_tmp->type >= FACT_EXPR_OPT)
       _free_rule(((tl_orexpr *)fact_tmp->target));
     free(fact_tmp);
   }
@@ -220,6 +281,8 @@ _dump_factors(tl_fact *facts, unsigned int level) {
   while (facts) {
     if (facts->type == FACT_RULE)
       printf("+%s ", ((char *)facts->target));
+    else if (facts->type == FACT_RULE_LINKED)
+      printf("+%s ", (((t_rdfl_bnf *)facts->target)->identifier));
     else if (facts->type == FACT_LITERAL)
       printf("_%s ", ((char *)facts->target));
     else {
