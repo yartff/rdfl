@@ -179,8 +179,8 @@ struct		s_ct_readIdentifier {
 #define		IS_CHAR_UPPER(c)	((c >= 'A' && c <= 'Z'))
 #define		IS_DIGIT(c)		((c >= '0' && c <= '9'))
 #define		IS_CHAR(c)		((IS_CHAR_LOWER(c) || IS_CHAR_UPPER(c)))
-#define		IDENTIFIER_ST_CHAR(c)	((IS_CHAR(c)))
-#define		IDENTIFIER_N_CHAR(c)	((IS_CHAR(c)) || IS_DIGIT(c))
+#define		IDENTIFIER_ST_CHAR(c)	((IS_CHAR(c) || (c == '_')))
+#define		IDENTIFIER_N_CHAR(c)	((IS_CHAR(c)) || IS_DIGIT(c) || (c == '_'))
 
 int
 _cb__ct_readIdentifier(void *ptr, size_t s, void *data) { // rdfl_ct_readIdentifier

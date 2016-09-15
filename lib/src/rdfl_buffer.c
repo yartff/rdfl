@@ -194,7 +194,8 @@ rdfl_b_consume_size(t_rdfl_buffer *b, size_t value) {
   while (value) {
     if (value >= b->consumer.l_total) {
       value -= b->consumer.l_total;
-      b->consumer.skip -= b->consumer.l_total;
+      b->consumer.skip = ((b->consumer.skip >= b->consumer.l_total)
+	  ? b->consumer.skip - b->consumer.l_total : 0);
       rdfl_b_del_restat_butfirst(b);
     }
     else {

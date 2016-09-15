@@ -41,7 +41,5 @@ ssize_t		rdfl_ct_readIdentifier(t_rdfl *, void **extract, e_bacc_options);
 ssize_t		rdfl_ct_readUntil(t_rdfl *, void **, void *, size_t, e_bacc_options);
 ssize_t		rdfl_ct_readAllContained(t_rdfl *, void **, const char *, e_bacc_options);
 
-// BNF
-int		rdfl_readBNF(t_rdfl *);
 
 #endif

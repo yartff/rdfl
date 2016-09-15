@@ -23,3 +23,8 @@ _ Investigate about O_NONBLOCK on socket
 _ consumers for EOF, range, peek_ndx, peek_pop, ...
 _ Reconsider the impact of allowing data force consume during an RDFL_AUTOREAD routine
 _ LAST_FETCH_CONTAINS
+_ option to generate c source code parsing the bnf using rdfl
+_ RDFL_KEEP_TRACK to store current line and column
+_ Use above option to make proper error report on bnf parsing
+_ group rule to extract as a single string
+_ could even use variables to launch rules anytime

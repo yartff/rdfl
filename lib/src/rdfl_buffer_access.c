@@ -289,7 +289,7 @@ _rdfl_bacc_cycle_cmp(t_rdfl *obj, void *ptr, size_t s, int cbret, e_bacc_options
   data.ptr = ptr;
   data.offset = 0;
   data.return_value = 0;
-  rdfl_printbufferstate(obj);
+  // rdfl_printbufferstate(obj);
   if ((ret = _iterate_chunk(obj, &_cb__bacc_cmp, &data, opt)) <= 0) {
     if (VCSM_REACHED_EOF) {
       _iterate_extract(obj, NULL, data.return_value * s, opt);

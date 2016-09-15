@@ -17,7 +17,7 @@ rdfl_push_read(t_rdfl *obj, void *ptr, size_t available) {
   if (RDFL_OPT_ISSET(obj->settings, RDFL_LOC_REACHED_EOF))
     return (0);
   ret = rdfl_b_push_read(&obj->data, obj->fd, ptr, available);
-  if (!ret)
+  if (ret <= 0)
     _rdfl_close(obj);
   return (ret);
 }
