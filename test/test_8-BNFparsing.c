@@ -13,7 +13,6 @@ test_8__BNFparsing(void) {
   rdfl_set_buffsize(&example, 14);
   if (rdfl_load_path(&example, "example_files/test_8_bash.bnf", RDFL_AUTOREAD, NULL))
     return (EXIT_FAILURE);
-  while (_read_singlestep(&example) > 0);
   // rdfl_printbufferstate(&example);
   bnf = rdfl_readBNF(&example);
   //fprintf(stderr, "=== Final RES: %d\n", rdfl_readBNF(&example));
