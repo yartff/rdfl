@@ -1,5 +1,5 @@
 #include	<stdlib.h>
-#include	"rdfl.h"
+#include	"tester.h"
 #include	"rdfl_buffer_access.h"
 
 #define STR "root:x:0:0:root:/root:/bin/tcsh"

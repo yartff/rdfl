@@ -41,16 +41,18 @@ typedef			enum {
   ERR_CONNECTION	= -11,
   ERR_CONNECTION_CLOSED	= -12,
   ERR_OUTOFBOUND	= -13,
+  ERR_MISC		= -50,
   VCSM			= -100,
   VCSM_INCOMPLETE_TOKEN	= -101,
   VCSM_UNMARKED_TOKEN	= -102,
   VCSM_REACHED_EOF	= -103,
-  VAL			= -200,
-  VAL_POTENTIALDATA	= -201,
-  VAL_TIMEOUT_REACHED	= -202,
-  VAL_LAST_READ_0	= -203,
+  BNF_MISSINGID		= -200,
+  VAL			= -400,
+  VAL_POTENTIALDATA	= -401,
+  VAL_TIMEOUT_REACHED	= -402,
+  VAL_LAST_READ_0	= -403,
   // If you get this value, pls fill in buffer manually and try again
-  VAL_NEED_DATA		= -204
+  VAL_NEED_DATA		= -404
 }			e_rdflerrors;
 
 typedef				enum {

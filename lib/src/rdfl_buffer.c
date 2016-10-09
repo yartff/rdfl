@@ -5,6 +5,7 @@
 #include	<stdlib.h>
 #include	"rdfl_buffer.h"
 #include	"rdfl_local.h"
+#include	"rdfl_context.h"
 
 // Calculations
 //
@@ -89,6 +90,8 @@ rdfl_b_clean_to_last_buffer(t_rdfl_buffer *b) {
 
 void
 rdfl_buffer_clean(t_rdfl_buffer *b) {
+  rdfl_dropallcontexts(b);
+  free(b->consumer.ctx);
   while (b->consumer.raw)
     rdfl_b_del(b);
   rdfl_buffer_init(b, 0);
@@ -173,24 +176,13 @@ rdfl_b_next_chunk(t_rdfl_buffer *b, size_t *s) {
 // both consumer.ndx and buffer.ndx goes back to 0 << TODO to reconsider
 void
 rdfl_b_consume_size(t_rdfl_buffer *b, size_t value) {
-
-  // TODO do we allow consuming through skip? (#ConsumeVsContexts)
-  // >> yes, concerned contexts will be dropped.
-  // if RDFL_CONTEXT alone
-  //   skip will correspond to the last context. It can't be manually changed
-  //   contexts are stored as sums (2, 2, 2) sets a context every 2 bytes
-  // if RDFL_CONSUME
-  //   skip will be adjusted (skip -= consume_size)
-  //   if RDFL_CONTEXT
-  //     contexts are dropped with the content
-  //
   value += b->consumer.skip;
-  // Drop all contexts
-  //
 
   if (value > b->consumer.total) {
     value = b->consumer.total;
   }
+  //rdfl_context_consume(b, value);
+  rdfl_dropallcontexts(b);
   while (value) {
     if (value >= b->consumer.l_total) {
       value -= b->consumer.l_total;
@@ -203,7 +195,6 @@ rdfl_b_consume_size(t_rdfl_buffer *b, size_t value) {
       b->consumer.total -= value;
       b->consumer.skip = 0;
       b->consumer.ndx = (b->consumer.ndx + value) % b->consumer.raw->size;
-      value = 0;
       return ;
     }
   }
@@ -308,86 +299,10 @@ rdfl_b_push_read(t_rdfl_buffer *b, int fd, void *ptr, size_t s) {
 
 int
 rdfl_b_set_skip(t_rdfl_buffer *b, size_t value) {
+#ifdef		DEVEL
   if (value >= b->consumer.total)
     return (ERR_OUTOFBOUND);
+#endif
   b->consumer.skip = value;
   return (ERR_NONE);
-}
-
-
-// TODO #ifdef DEVEL
-// Debugging
-//
-static
-void
-print_chars(char c, size_t count) {
-  while (count--) {
-    printf("%c", c);
-  }
-}
-
-static
-void
-print_buffer(const char *str, size_t count) {
-  size_t	i = 0;
-  printf("\033[0;34m");
-  while (i < count) {
-    if (RDFL_IS_ASCII_PRINTABLECHAR(str[i])) {
-      printf("%c",  str[i]);
-    }
-    else {
-      printf("\033[1;32m%c\033[0;34m", RDFL_IS_ASCII_NODISPLAYCHAR(str[i]) ? '.' : '?');
-    }
-    ++i;
-  }
-  printf("\033[0m");
-}
-
-// TODO display size of each buffer
-// TODO display contexts
-void
-rdfl_b_print_buffers(t_rdfl_buffer *b) {
-  t_rdfl_b_list		*raw = b->consumer.raw;
-  size_t		tmp;
-
-  if (!raw) {
-    printf("\033[0;33mTOT: \033[0m%zu\n" , b->consumer.total);
-    return ;
-  }
-  printf("\033[0;33mTOT: \033[0m%zu \033[0;33m"
-      "(First TOT: \033[0m%zu\033[0;33m/\033[0m%zu\033[0;33m) -> %zu"
-      "\n\033[1;31m{\033[0m", b->consumer.total,
-      b->consumer.l_total, b->consumer.raw->size, b->consumer.skip);
-  while (raw) {
-    if (raw == b->consumer.raw) {
-      printf("\033[1;31m[\033[0m");
-      if (b->consumer.ndx + b->consumer.l_total > raw->size) {
-	//print_chars('.', (tmp = (b->consumer.l_total - (raw->size - b->consumer.ndx))));
-	print_buffer(raw->data, (tmp = (b->consumer.l_total - (raw->size - b->consumer.ndx))));
-	print_chars('_', b->consumer.ndx - tmp);
-	print_buffer(raw->data + b->consumer.ndx, raw->size - b->consumer.ndx);
-      }
-      else {
-	print_chars('_', b->consumer.ndx);
-	print_buffer(raw->data + b->consumer.ndx, b->consumer.l_total);
-	print_chars('_', b->consumer.raw->size - b->consumer.l_total - b->consumer.ndx);
-      }
-    }
-    else {
-      printf("\n \033[1;31m[\033[0m");
-      if (raw == b->buffer.raw) {
-	print_buffer(raw->data, b->buffer.ndx);
-	print_chars('_', raw->size - b->buffer.ndx);
-	printf("\033[1;31m]}\033[0m\n""Last buffer: (%zu/%zu, %zu Bytes free space)\n",
-	    b->buffer.ndx, raw->size, raw->size - b->buffer.ndx);
-	return ;
-      }
-      else {
-	print_buffer(raw->data, raw->size);
-      }
-    }
-    printf("\033[1;31m]\033[0m");
-    raw = raw->next;
-  }
-  printf("\033[1;31m}\033[0m\n");
 }

@@ -3,16 +3,12 @@
 
 # include	"rdfl.h"
 
-// Contexts
-void		rdfl_dropallcontexts(t_rdfl *);
-int		rdfl_pushcontext(t_rdfl *, size_t ndx);
-int		rdfl_dropcontexts(t_rdfl *, size_t ndx);
-// returns the new last context
-void		rdfl_popcontext(t_rdfl *);
-void		rdfl_restaurecontext(t_rdfl *);
-void		rdfl_shiftall(t_rdfl *, size_t);
+int		rdfl_restaurecontext(t_rdfl *, ssize_t);
+ssize_t		rdfl_pushcontext(t_rdfl *);
+void		rdfl_ctx_popuntil(t_rdfl_buffer *, ctxid_t);
+void		rdfl_dropallcontexts(t_rdfl_buffer *);
 
 int		rdfl_context_init(t_rdfl_buffer *);
-int		rdfl_shiftcontext(t_rdfl *obj, size_t n);
+void		rdfl_context_consume(t_rdfl_buffer *, size_t);
 
 # endif		/* !__RDFL_CONTEXT_H_ */

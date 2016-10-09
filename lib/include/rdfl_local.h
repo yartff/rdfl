@@ -2,6 +2,7 @@
 # define		__RDFL_LOCAL_H_
 
 # include		"rdfl_status_codes.h"
+# include		"rdfl.h"
 
 # define		RDFL_DEFAULT_BUFFSIZE	4096 // (bytes)
 # define		RDFL_DEFAULT_TIMEOUT	-1 // (blocking reads)
@@ -19,5 +20,8 @@ enum {
   BACC_CB_NEEDDATA,
   BACC_CB_NOACTION,
 };
+
+int			_iterate_chunk(t_rdfl *, int (*)(void *, size_t, void *), void *, e_bacc_options opt);
+int			_iterate_extract(t_rdfl *, void **, ssize_t, e_bacc_options);
 
 #endif			/* !__RDFL_LOCAL_H_ */

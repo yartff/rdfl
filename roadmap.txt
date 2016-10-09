@@ -28,3 +28,4 @@ _ RDFL_KEEP_TRACK to store current line and column
 _ Use above option to make proper error report on bnf parsing
 _ group rule to extract as a single string
 _ could even use variables to launch rules anytime
+_ devel.c for every heavy task for dumping negative contexts

@@ -3,6 +3,7 @@
 #include	<stdlib.h>
 #include	<string.h>
 #include	"rdfl_local.h"
+#include	"rdfl_context.h"
 #include	"rdfl_network.h"
 #include	"rdfl.h"
 
@@ -277,22 +278,6 @@ rdfl_clean(t_rdfl *obj) {
 
 // Constructors
 //
-static struct {
-  void			*fct;
-  const char		*name;
-  e_rdflsettings	flag;
-}	readersTable[] = {
-  // Order matters
-  {&_read_size, "readsize_handler_t", RDFL_FORCEREADSIZE},
-  {&_read_monitoring_no_extend, "readmonitoringnoext_handler_t", RDFL_MONITORING | RDFL_NO_EXTEND},
-  {&_read_monitoring_allavail, "readmonitoringall_handler_t", RDFL_MONITORING | RDFL_ALL_AVAILABLE},
-  {&_read_monitoring, "readmonitoring_handler_t", RDFL_MONITORING},
-  {&_read_noextend, "readnoextend_handler_t", RDFL_NO_EXTEND},
-  {&_read_all_available, "readall_handler_t", RDFL_ALL_AVAILABLE},
-  {&_read_legacy, "readlegacy_handler_t", RDFL_LEGACY},
-  {&_read_singlestep, "read_singlestep_t", RDFL_NONE},
-};
-
 rdflret_t
 rdfl_load(t_rdfl *new, int fd, e_rdflsettings settings, e_rdflerrors *err) {
   e_rdflerrors	nw_ret;
@@ -317,6 +302,10 @@ rdfl_load(t_rdfl *new, int fd, e_rdflsettings settings, e_rdflerrors *err) {
     if (err) *err = ERR_MEMORY;
     return (EXIT_FAILURE);
   }
+  new->data.consumer.ctx = NULL;
+  if (RDFL_OPT_ISSET(settings, RDFL_CONTEXT) && rdfl_context_init(&(new->data)) < 0) {
+    return (EXIT_FAILURE);
+  }
   if (err) *err = ERR_NONE;
   return (EXIT_SUCCESS);
   // return (_check_func(settings));
@@ -337,7 +326,7 @@ rdflret_t
 rdfl_load_path(t_rdfl *new, const char *path, e_rdflsettings settings, e_rdflerrors *err) {
   int		fd;
 
-  if ((fd = open(path, O_RDONLY)) == - 1) {
+  if ((fd = open(path, O_RDONLY)) == -1) {
     if (err) *err = ERR_OPEN;
     return (EXIT_FAILURE);
   }
@@ -355,36 +344,6 @@ rdfl_load_connect(t_rdfl *new, const char *ip, int port, e_rdflsettings settings
   }
   RDFL_OPT_SET(settings, RDFL_LOC_OPEN);
   return (rdfl_load(new, fd_sock, settings, err));
-}
-
-// Helpers
-//
-const char *
-handler_typedef_declare(void *ptr) {
-  unsigned int	i = 0;
-
-  while (i < (sizeof(readersTable) / sizeof(*readersTable))) {
-    if (ptr == readersTable[i].fct)
-      return (readersTable[i].name);
-    ++i;
-  }
-  return (NULL);
-}
-
-void *
-get_func(e_rdflsettings settings) {
-  unsigned int	i = 0;
-  while (i < ((sizeof(readersTable) / sizeof(*readersTable)) - 1)) {
-    if (RDFL_OPT_CONTAINALL(settings, readersTable[i].flag))
-      return (readersTable[i].fct);
-    ++i;
-  }
-  return (&_read_singlestep);
-}
-
-void
-rdfl_printbufferstate(t_rdfl *obj) {
-  rdfl_b_print_buffers(&obj->data);
 }
 
 // Opt setters

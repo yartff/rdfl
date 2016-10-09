@@ -1,5 +1,5 @@
 #include	<stdlib.h>
-#include	"rdfl.h"
+#include	"tester.h"
 
 int
 test_2__inplace_reader(void) {

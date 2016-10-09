@@ -4,13 +4,16 @@
 # define	RDFL_IS_ASCII_PRINTABLECHAR(c) ((c) >= ' ' && (c) <= '~')
 # define	RDFL_IS_ASCII_NODISPLAYCHAR(c) (((c) == '\n') || ((c) == '\t'))
 
+typedef	ssize_t		ctxid_t;
 typedef struct		s_ctxstack {
-  size_t		value;
+  ssize_t		value; // TODO ssize_t?
+  ctxid_t		id;
   struct s_ctxstack	*next;
 }			t_ctxstack;
 
 typedef struct		{
   size_t		total;
+  ctxid_t		id;
   t_ctxstack		*stack;
 }			t_rdfl_contexts;
 

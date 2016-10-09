@@ -77,8 +77,6 @@ rdflret_t	rdfl_load_fileptr(t_rdfl *, FILE *file_ptr, e_rdflsettings, e_rdflerro
 rdflret_t	rdfl_load_path(t_rdfl *, const char *path, e_rdflsettings, e_rdflerrors *);
 rdflret_t	rdfl_load_connect(t_rdfl *, const char *, int, e_rdflsettings, e_rdflerrors *);
 
-const char	*handler_typedef_declare(void *ptr);
-void		*get_func(e_rdflsettings);
 void		rdfl_clean(t_rdfl *obj);
 int		rdfl_eofreached(t_rdfl *obj);
 
@@ -88,7 +86,6 @@ int		rdfl_set_skip(t_rdfl *, size_t value);
 void		*rdfl_flush_buffers_alloc(t_rdfl *obj, ssize_t *count_value);
 void		*rdfl_getinplace_next_chunk(t_rdfl *, size_t *, size_t *);
 void		rdfl_force_consume_size(t_rdfl *obj, size_t s);
-void		rdfl_printbufferstate(t_rdfl *obj);
 
 int		rdfl_set_comment_ml(t_rdfl *, const char *, const char *);
 int		rdfl_set_comment(t_rdfl *, const char *, const char *);

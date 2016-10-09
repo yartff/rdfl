@@ -14,20 +14,24 @@
 #define		OP_GRP_BEG		"("
 #define		OP_GRP_END		")"
 #define		READ_OPE(obj, c, opt)	(rdfl_bacc_readptr(obj, c, sizeof(c) - 1, opt) > 0)
-
 static int _link_exprs(t_rdfl_bnf *tmp, tl_orexpr *);
-static
+
 t_rdfl_bnf *
 _seek_target(t_rdfl_bnf *bnf, char *id) {
   while (bnf) {
-    if (!strcmp(bnf->identifier, id)) {
-      free(id);
+    if (!strcmp(bnf->identifier, id))
       return (bnf);
-    }
     bnf = bnf->next;
   }
-  free(id);
   return (NULL);
+}
+
+static
+t_rdfl_bnf *
+_seek_target_free(t_rdfl_bnf *bnf, char *id) {
+  bnf = _seek_target(bnf, id);
+  free(id);
+  return (bnf);
 }
 
 static
@@ -36,7 +40,7 @@ _link_target(t_rdfl_bnf *tmp, tl_fact *facts) {
   while (facts) {
     if (facts->type == FACT_RULE) {
       facts->type = FACT_RULE_LINKED;
-      if (!(facts->target = (void *)_seek_target(tmp, ((char *)facts->target))))
+      if (!(facts->target = (void *)_seek_target_free(tmp, ((char *)facts->target))))
 	return (EXIT_FAILURE);
     }
     else if (facts->type >= FACT_EXPR_OPT) {
@@ -75,9 +79,6 @@ _link_factors(t_rdfl_bnf *tmp) {
 static const e_bacc_options	OPTS = RDFL_P_NULLTERMINATED | RDFL_P_CONSUME;
 static tl_orexpr		*_read_or_expression(t_rdfl *obj);
 static void			_free_rule(tl_orexpr *exprs);
-// TODO
-// once the bnf object created
-// link every identifier to the t_rdfl_bnf *
 
 static
 tl_orexpr *
@@ -205,14 +206,16 @@ rdfl_readBNF(t_rdfl *obj) {
   if (rdfl_set_comment(obj, "##", "\n") != ERR_NONE
       || rdfl_set_comment(obj, "/*", "*/") != ERR_NONE)
     return (NULL);
-  if ((productions = read_production(obj)) == NULL)
+  if ((productions = read_production(obj)) == NULL) {
     return (NULL);
+  }
   it = productions;
   while ((it->next = read_production(obj)) != NULL) {
     it = it->next;
   }
-  if (!rdfl_eofreached(obj))
+  if (!rdfl_eofreached(obj)) {
     return (NULL);
+  }
   if (_link_factors(productions) == EXIT_FAILURE) {
     rdfl_freeBNF(productions);
     return (NULL);
@@ -302,11 +305,16 @@ _dump_factors(tl_fact *facts, unsigned int level) {
 static
 void
 _dump_rule(tl_orexpr *exprs, unsigned int level, int pnl) {
+  int i = 0;
   while (exprs) {
-    if (pnl)
+    if (pnl == 1)
       _dump_level(level);
+    else if (i) {
+      printf("| ");
+    }
+    i = 1;
     _dump_factors(exprs->factors, level);
-    if (pnl)
+    if (pnl == 1)
       printf("\n");
     exprs = exprs->next;
   }

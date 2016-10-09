@@ -11,11 +11,12 @@ typedef			enum {
   FACT_EXPR_GROUP
 }			e_fact_type;
 
+
 // TODO when consuming the second stream
 // ( 'a' 'b' | 'a' 'c' )
 // what if consumes 'a'? do I really need to use contexts for these?
 // even worse:
-// ( ">>" ">" identifier | ">>>" integer
+// ( ">>" ">" identifier | ">>>" integer)
 
 typedef struct		sl_fact {
   e_fact_type		type;
@@ -44,5 +45,7 @@ void		rdfl_freeBNF(t_rdfl_bnf *);
 // #ifdef		DEVEL
 void		rdfl_readBNF_dump(t_rdfl_bnf *);
 //#endif
+ssize_t		rdfl_applyBNF(t_rdfl_bnf *, t_rdfl *, char *);
+t_rdfl_bnf	*_seek_target(t_rdfl_bnf *, char *);
 
 #endif		/* !__RDFL_READBNF_H_ */

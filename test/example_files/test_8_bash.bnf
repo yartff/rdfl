@@ -16,7 +16,7 @@ word_list ::= word
 assignment_word ::= word '=' word ;
 
 
-redirection ::=  '>' word
+redirection ::= '>' word
 |  '<' word
 |  number '>' word
 |  number '<' word
