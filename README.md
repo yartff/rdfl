@@ -1,4 +1,5 @@
- ,ggggggggggg,
+```
+,ggggggggggg,
 dP"""88""""""Y8,	  8I  ,dPYb, ,dPYb,
 Yb,  88      `8b	  8I  IP'`Yb IP'`Yb
  `"  88      ,8P	  8I  I8  8I I8  8I
@@ -14,5 +15,6 @@ Yb,  88      `8b	  8I  IP'`Yb IP'`Yb
 			      I8   8I
 			      I8, ,8'
 			      "Y8P'
+```
 
 Stream Reader and Buffering Library.
