@@ -115,7 +115,6 @@ rdfl_context_init(t_rdfl_buffer *buffer) {
   buffer->consumer.ctx->total = 0;
   buffer->consumer.ctx->id = 0;
   buffer->consumer.ctx->stack = NULL;
-  printf("%d\n", 44333);
   return (ERR_NONE);
 }
 

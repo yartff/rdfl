@@ -10,6 +10,63 @@
 # include	"rdfl_context.h"
 # include	"rdfl_devel.h"
 
+// RDFL
+
+// Helpers
+//
+static struct {
+  void			*fct;
+  const char		*name;
+  const char		*func;
+  e_rdflsettings	flag;
+}	readersTable[] = {
+  // Order matters
+  {&_read_size, "readsize_handler_t", "_read_size", RDFL_FORCEREADSIZE},
+  {&_read_monitoring_no_extend, "readmonitoringnoext_handler_t", "_read_monitoring_no_extend", RDFL_MONITORING | RDFL_NO_EXTEND},
+  {&_read_monitoring_allavail, "readmonitoringall_handler_t", "_read_monitoring_allavail", RDFL_MONITORING | RDFL_ALL_AVAILABLE},
+  {&_read_monitoring, "readmonitoring_handler_t", "_read_monitoring", RDFL_MONITORING},
+  {&_read_noextend, "readnoextend_handler_t", "_read_noextend", RDFL_NO_EXTEND},
+  {&_read_all_available, "readall_handler_t", "_read_all_available", RDFL_ALL_AVAILABLE},
+  {&_read_legacy, "readlegacy_handler_t", "_read_legacy", RDFL_LEGACY},
+  {&_read_singlestep, "read_singlestep_t", "_read_singlestep", RDFL_NONE},
+};
+
+const char *
+handler_typedef_declare(void *ptr) {
+  unsigned int	i = 0;
+
+  while (i < (sizeof(readersTable) / sizeof(*readersTable))) {
+    if (ptr == readersTable[i].fct)
+      return (readersTable[i].name);
+    ++i;
+  }
+  return (NULL);
+}
+
+const char *
+handler_func_declare(void *ptr) {
+  unsigned int	i = 0;
+
+  while (i < (sizeof(readersTable) / sizeof(*readersTable))) {
+    if (ptr == readersTable[i].fct)
+      return (readersTable[i].func);
+    ++i;
+  }
+  return (NULL);
+}
+
+void *
+get_func(e_rdflsettings settings) {
+  unsigned int	i = 0;
+  while (i < ((sizeof(readersTable) / sizeof(*readersTable)) - 1)) {
+    if (RDFL_OPT_CONTAINALL(settings, readersTable[i].flag))
+      return (readersTable[i].fct);
+    ++i;
+  }
+  return (&_read_singlestep);
+}
+
+
 // Debugging
 //
 static
@@ -35,6 +92,20 @@ print_buffer(const char *str, size_t count) {
     ++i;
   }
   printf("\033[0m");
+}
+
+void
+rdfl_print_contexts(t_rdfl_buffer *b) {
+  t_ctxstack	*tmp;
+  if (!b->consumer.ctx || !b->consumer.ctx->stack) {
+    printf("%s\n", "No contexts");
+    return ;
+  }
+  tmp = b->consumer.ctx->stack;
+  while (tmp) {
+    printf("[%zd]=(%zd)\n", tmp->id, tmp->value);
+    tmp = tmp->next;
+  }
 }
 
 // TODO display size of each buffer
@@ -94,65 +165,10 @@ rdfl_b_print_buffers(t_rdfl_buffer *b) {
   printf("\033[1;31m}\033[0m\n");
 }
 
-// RDFL
-
-// Helpers
-//
-static struct {
-  void			*fct;
-  const char		*name;
-  const char		*func;
-  e_rdflsettings	flag;
-}	readersTable[] = {
-  // Order matters
-  {&_read_size, "readsize_handler_t", "_read_size", RDFL_FORCEREADSIZE},
-  {&_read_monitoring_no_extend, "readmonitoringnoext_handler_t", "_read_monitoring_no_extend", RDFL_MONITORING | RDFL_NO_EXTEND},
-  {&_read_monitoring_allavail, "readmonitoringall_handler_t", "_read_monitoring_allavail", RDFL_MONITORING | RDFL_ALL_AVAILABLE},
-  {&_read_monitoring, "readmonitoring_handler_t", "_read_monitoring", RDFL_MONITORING},
-  {&_read_noextend, "readnoextend_handler_t", "_read_noextend", RDFL_NO_EXTEND},
-  {&_read_all_available, "readall_handler_t", "_read_all_available", RDFL_ALL_AVAILABLE},
-  {&_read_legacy, "readlegacy_handler_t", "_read_legacy", RDFL_LEGACY},
-  {&_read_singlestep, "read_singlestep_t", "_read_singlestep", RDFL_NONE},
-};
-
-const char *
-handler_typedef_declare(void *ptr) {
-  unsigned int	i = 0;
-
-  while (i < (sizeof(readersTable) / sizeof(*readersTable))) {
-    if (ptr == readersTable[i].fct)
-      return (readersTable[i].name);
-    ++i;
-  }
-  return (NULL);
-}
-
-const char *
-handler_func_declare(void *ptr) {
-  unsigned int	i = 0;
-
-  while (i < (sizeof(readersTable) / sizeof(*readersTable))) {
-    if (ptr == readersTable[i].fct)
-      return (readersTable[i].func);
-    ++i;
-  }
-  return (NULL);
-}
-
-void *
-get_func(e_rdflsettings settings) {
-  unsigned int	i = 0;
-  while (i < ((sizeof(readersTable) / sizeof(*readersTable)) - 1)) {
-    if (RDFL_OPT_CONTAINALL(settings, readersTable[i].flag))
-      return (readersTable[i].fct);
-    ++i;
-  }
-  return (&_read_singlestep);
-}
-
 void
 rdfl_printbufferstate(t_rdfl *obj) {
   rdfl_b_print_buffers(&obj->data);
+  rdfl_print_contexts(&obj->data);
 }
 
 // #endif

@@ -34,6 +34,10 @@ test_8__BNFparsing(void) {
 
   rdfl_set_skip(&example, 30);
   rdfl_pushcontext(&example);
+  rdfl_set_skip(&example, 38);
+  rdfl_pushcontext(&example);
+  rdfl_set_skip(&example, 30);
+  rdfl_pushcontext(&example);
 
 
   rdfl_printbufferstate(&example);
