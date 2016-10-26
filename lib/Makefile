@@ -23,15 +23,21 @@ OBJ		=		$(SRC:.c=.o)
 
 CFLAGS		+=		-Wall -Wextra
 CFLAGS		+=		-fPIC -std=gnu99
-CFLAGS		+=		-O3
 CFLAGS		+=		-finline-functions
 CFLAGS		+=		-I$(INCDIR)
 CFLAGS		+=		-D_POSIX_C_SOURCE
 CFLAGS		+=		-D_POSIX_SOURCE
 CFLAGS		+=		-D_BSD_SOURCE
 CFLAGS		+=		-D_DEFAULT_SOURCE
-## CFLAGS	+=		-g3
-# LD_FLAGS	+=		-lrt
+
+ifeq	($(D),1)
+  CFLAGS	+=		-DDEVEL
+endif
+ifeq	($(F),1)
+  CFLAGS	+=		-g3
+else
+  CFLAGS	+=		-O3
+endif
 
 $(NOLN_NAME):		$(OBJ)
 	$(CMD_CC) $(OBJ) -shared -o $(NAME) $(LD_FLAGS)

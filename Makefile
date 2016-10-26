@@ -7,20 +7,17 @@ lib:
 test:	lib
 	@make test -C $(TEST_DIR) --no-print-directory
 
-retest:
-	@make re -C $(TEST_DIR) --no-print-directory
+devel:
+	@make -C $(LIB_DIR) D=1 --no-print-directory
 
-relib:
-	@make re -C $(LIB_DIR) --no-print-directory
+debug:
+	@make -C $(LIB_DIR) F=1 --no-print-directory
 
-exretest:	lib
-	@make retest -C $(TEST_DIR) --no-print-directory
-
-debug:		lib
-	@make debug -C $(TEST_DIR) --no-print-directory
+devall:
+	@make -C $(LIB_DIR) D=1 F=1 --no-print-directory
 
 clean:
 	@make fclean -C $(LIB_DIR) --no-print-directory
 	@make fclean -C $(TEST_DIR) --no-print-directory
 
-.PHONY:		lib test
+.PHONY:		lib test devel debug devall clean

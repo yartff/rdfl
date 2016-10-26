@@ -349,7 +349,9 @@ rdfl_load_connect(t_rdfl *new, const char *ip, int port, e_rdflsettings settings
 // Opt setters
 //
 void	rdfl_init(t_rdfl *dest) {
+#ifdef DEVEL
   if (!dest) return ;
+#endif
   static t_rdfl_values		v = {
     .timeout = RDFL_DEFAULT_TIMEOUT,
     .buffsize = RDFL_DEFAULT_BUFFSIZE,
@@ -358,6 +360,9 @@ void	rdfl_init(t_rdfl *dest) {
   dest->nw = NULL;
   dest->settings = RDFL_NONE;
   dest->fd = -1;
+#ifdef DEVEL
+  fprintf(stdout, "RDFL Devel version. Read the wiki (later...) for more infos.\n");
+#endif
 }
 
 t_rdfl	*rdfl_init_new(void) {

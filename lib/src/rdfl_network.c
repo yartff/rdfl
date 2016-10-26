@@ -17,7 +17,6 @@ rdfl_nw_clean(t_rdfl_net *obj) {
   free(obj->timeout);
 }
 
-inline
 void
 rdfl_nw_hit_timeout(t_rdfl_net *obj, ssize_t timeout) {
   obj->timeout->tv_usec = timeout % 1000000;

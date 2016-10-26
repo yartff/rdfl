@@ -26,22 +26,23 @@ typedef			enum {
   RDFL_LAST		= 1 << 17,
 }			e_rdflsettings;
 
+// TODO DEVEL-version-only flags
 typedef			enum {
   ERR_NONE		= 0,
-  ERR_SIZETOOBIG	= -1,
+  ERR_SIZETOOBIG	= -1, // DEVEL?
   ERR_READ		= -2,
   ERR_MEMORY		= -3,
   ERR_BADF		= -4,
-  ERR_BADFLAGS		= -5,
-  ERR_NOSPACELEFT	= -6,
-  ERR_SELECT		= -7,
-  ERR_OPEN		= -8,
-  ERR_TIMER		= -9,
-  ERR_NOT_IMPLEMENTED	= -10,
-  ERR_CONNECTION	= -11,
-  ERR_CONNECTION_CLOSED	= -12,
-  ERR_OUTOFBOUND	= -13,
-  ERR_MISC		= -50,
+  ERR_NOSPACELEFT	= -5, // DEVEL?
+  ERR_SELECT		= -6,
+  ERR_OPEN		= -7,
+  ERR_TIMER		= -8,
+  ERR_NOT_IMPLEMENTED	= -9,
+  ERR_CONNECTION	= -10,
+  ERR_CONNECTION_CLOSED	= -11,
+  ERR_OUTOFBOUND	= -30, // DEVEL CHECKED :)
+  ERR_BADFLAGS		= -31, // DEVEL
+  ERR_MISC		= -99,
   VCSM			= -100,
   VCSM_INCOMPLETE_TOKEN	= -101,
   VCSM_UNMARKED_TOKEN	= -102,

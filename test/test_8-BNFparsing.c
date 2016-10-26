@@ -13,7 +13,7 @@ test_8__BNFparsing(void) {
   // t_rdfl_bnf		*bnf = NULL;
 
   rdfl_init(&example);
-  rdfl_set_buffsize(&example, 14);
+  rdfl_set_buffsize(&example, 140);
   if (rdfl_load_path(&example, "example_files/test_8_bash.bnf", RDFL_AUTOREAD | RDFL_ALL_AVAILABLE | RDFL_CONTEXT, NULL))
     return (EXIT_FAILURE);
   /*
