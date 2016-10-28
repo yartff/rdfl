@@ -28,14 +28,14 @@ rdfl_restaurecontext(t_rdfl *obj, ssize_t id) {
   if (id == -1) {
 #ifdef		DEVEL
     if (!obj->data.consumer.ctx || !obj->data.consumer.ctx->stack)
-      return (ERR_OUTOFBOUND);
+      return (ERRDEV_OUTOFBOUND);
 #endif
     obj->data.consumer.skip = obj->data.consumer.ctx->total;
     return (ERR_NONE);
   }
 #ifdef		DEVEL
   t_ctxstack	*ctx = _get_context_byId(obj, id, &total);
-  if (!ctx) return (ERR_OUTOFBOUND);
+  if (!ctx) return (ERRDEV_OUTOFBOUND);
 #else
   (void)_get_context_byId(obj, id, &total);
 #endif
@@ -63,9 +63,9 @@ rdfl_pushcontext(t_rdfl *obj) {
 
 #ifdef		DEVEL
   if (!RDFL_OPT_ISSET(obj->settings, RDFL_CONTEXT))
-    return (ERR_BADFLAGS);
+    return (ERRDEV_BADFLAGS);
   if ((obj->data.consumer.skip) >= obj->data.consumer.total)
-    return (ERR_OUTOFBOUND);
+    return (ERRDEV_OUTOFBOUND);
 #endif
   diff = obj->data.consumer.skip - obj->data.consumer.ctx->total;
   if (!(n = _create_context(diff, (obj->data.consumer.ctx ? obj->data.consumer.ctx->stack : NULL), obj->data.consumer.ctx->id))) {

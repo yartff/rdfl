@@ -8,6 +8,7 @@
 static const e_bacc_options	OPTS = RDFL_P_NULLTERMINATED;
 static ssize_t			_eval_orexpr(tl_orexpr *, t_rdfl_bnf *, t_rdfl *);
 static ssize_t			_eval_rule(t_rdfl_bnf *, t_rdfl_bnf *, t_rdfl *);
+// TODO if RDFL_P_SETCONTEXT && return positive, then push an "anonymous" context
 
 // TODO wipe consume
 static
@@ -45,11 +46,12 @@ _eval_expr_group(tl_orexpr *expr, t_rdfl_bnf *bnf, t_rdfl *fl) {
   return (_eval_orexpr(expr, bnf, fl));
 }
 
-// TODO #ifdef DEVEL
+#ifdef DEVEL
 static int level = 0;
 
-// static
-void dump_fact(tl_fact *fact) {
+static
+void
+dump_fact(tl_fact *fact) {
   int l = level;
   while (l) {
     fprintf(stdout, "  ");
@@ -62,8 +64,8 @@ void dump_fact(tl_fact *fact) {
     fprintf(stdout, "+%s\n", ((char *)fact->target));
 }
 
-// TODO
-# include	"rdfl_devel.h"
+#include	"rdfl_devel.h"
+#endif
 
 static
 ssize_t
@@ -75,8 +77,10 @@ _eval_expr(tl_fact *fact, t_rdfl_bnf *bnf, t_rdfl *fl) {
   (void)ctx_id;
   while (fact) {
     rdfl_restaurecontext(fl, -1);
+#ifdef		DEVEL
     rdfl_printbufferstate(fl);
-    // dump_fact(fact);
+    dump_fact(fact);
+#endif
     ret = ((fact->type == FACT_RULE_LINKED) ? _eval_rule(((t_rdfl_bnf *)fact->target), bnf, fl)
 	: (fact->type == FACT_LITERAL) ? _eval_expr_literal(((char *)fact->target), fl)
 	: (fact->type == FACT_EXPR_OPT) ? _eval_expr_opt(((tl_orexpr *)fact->target), bnf, fl)
@@ -85,8 +89,10 @@ _eval_expr(tl_fact *fact, t_rdfl_bnf *bnf, t_rdfl *fl) {
 	: 0);
     // rdfl_printbufferstate(fl);
     if (ret > 0) {
+#ifdef		DEVEL
       fprintf(stdout, "<<<========%zd TYPE %d\n", ret, fact->type);
       rdfl_printbufferstate(fl);
+#endif
     }
     if (ret <= 0) {
       // rdfl_restaurecontext(fl, ctx_id);
@@ -101,15 +107,18 @@ static
 ssize_t
 _eval_orexpr(tl_orexpr *or, t_rdfl_bnf *bnf, t_rdfl *fl) {
   ssize_t	ret;
-  // TODO #ifdef DEVEL
+#ifdef DEVEL
   ++level;
+#endif
   if ((ret = _eval_expr(or->factors, bnf, fl)) < 0)
     return (ret);
   while (ret == 0 && ((or = or->next) != NULL)) {
     if ((ret = _eval_expr(or->factors, bnf, fl)) < 0)
       return (ret);
   }
+#ifdef DEVEL
   --level;
+#endif
   return (ret);
 }
 

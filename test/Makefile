@@ -19,18 +19,16 @@ OBJ		=		$(SRC:.c=.o)
 
 LD_FLAGS	+=		-lrdfl
 CFLAGS		+=		-Wall -Wextra
-## CFLAGS		+=		-g3
 CFLAGS		+=		-I$(INCDIR)
+CFLAGS		+=		-g3
 
 $(TEST):		$(OBJ)
 	$(CMD_CC) $(OBJ) -L$(LIBDIR) $(LD_FLAGS) -o $(TEST)
 
-test:			$(TEST)
+exec:			$(TEST)
 	@env "LD_LIBRARY_PATH=$(LIBDIR)" ./$(TEST) 
 
-retest:			fclean test
-
-debug:			$(TEST)
+valexec:		$(TEST)
 	@env "LD_LIBRARY_PATH=$(LIBDIR)" valgrind ./$(TEST) 
 
 all:			$(TEST)
@@ -43,4 +41,4 @@ fclean:			clean
 
 re:	fclean all
 
-.PHONY:	all clean fclean re
+.PHONY:		all clean fclean re exec valexec

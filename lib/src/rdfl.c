@@ -383,7 +383,7 @@ void	rdfl_set_buffsize(t_rdfl *r, ssize_t buffsize)
 int	rdfl_set_skip(t_rdfl *r, size_t skip) {
 #ifdef		DEVEL
   if (RDFL_OPT_ISSET(r->settings, RDFL_CONTEXT))
-    return (ERR_BADFLAGS);
+    return (ERRDEV_BADFLAGS);
 #endif
   return (rdfl_b_set_skip(&r->data, skip));
 }

@@ -4,9 +4,6 @@ TEST_DIR	=	test/
 lib:
 	@make -C $(LIB_DIR) --no-print-directory
 
-test:	lib
-	@make test -C $(TEST_DIR) --no-print-directory
-
 devel:
 	@make -C $(LIB_DIR) D=1 --no-print-directory
 
@@ -15,6 +12,12 @@ debug:
 
 devall:
 	@make -C $(LIB_DIR) D=1 F=1 --no-print-directory
+
+valexec:	devall
+	@make valexec -C $(TEST_DIR) D=1 F=1 --no-print-directory
+
+exec:	lib
+	@make exec -C $(TEST_DIR) --no-print-directory
 
 clean:
 	@make fclean -C $(LIB_DIR) --no-print-directory

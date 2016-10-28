@@ -301,7 +301,7 @@ int
 rdfl_b_set_skip(t_rdfl_buffer *b, size_t value) {
 #ifdef		DEVEL
   if (value >= b->consumer.total)
-    return (ERR_OUTOFBOUND);
+    return (ERRDEV_OUTOFBOUND);
 #endif
   b->consumer.skip = value;
   return (ERR_NONE);
