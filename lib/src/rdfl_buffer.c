@@ -6,6 +6,7 @@
 #include	"rdfl_buffer.h"
 #include	"rdfl_local.h"
 #include	"rdfl_context.h"
+#include	"rdfl_devel.h"
 
 // Calculations
 //
@@ -69,6 +70,7 @@ rdfl_b_del_restat_butfirst(t_rdfl_buffer *b) {
   b->buffer.ndx = 0;
 }
 
+#if 0 // UNUSED ATM
 // Assumes there's one unique raw with data ranged from 0 to buffer.ndx
 inline static void rdfl_b_sraw_restat(t_rdfl_buffer *b) {
   b->consumer.l_total = b->buffer.ndx;
@@ -76,7 +78,6 @@ inline static void rdfl_b_sraw_restat(t_rdfl_buffer *b) {
   b->consumer.ndx = 0;
 }
 
-#if 0 // UNUSED ATM
 static
 void
 rdfl_b_clean_to_last_buffer(t_rdfl_buffer *b) {
@@ -88,19 +89,29 @@ rdfl_b_clean_to_last_buffer(t_rdfl_buffer *b) {
 }
 #endif
 
+#ifdef		DEVEL
+e_rdflerrors
+#else
 void
+#endif
 rdfl_buffer_clean(t_rdfl_buffer *b) {
+#ifdef		DEVEL
+  if (!b) return (ERRDEV_NULLOBJECT);
+#endif
   rdfl_dropallcontexts(b);
   free(b->consumer.ctx);
   while (b->consumer.raw)
     rdfl_b_del(b);
   rdfl_buffer_init(b, 0);
+#ifdef		DEVEL
+  return (ERR_NONE);
+#endif
 }
 
 void
 rdfl_b_fullclean_if_empty(t_rdfl_buffer *b) {
   if (!(b->consumer.total))
-    rdfl_buffer_clean(b);
+    (void)rdfl_buffer_clean(b);
 }
 
 // Constructors
@@ -286,8 +297,9 @@ ssize_t
 rdfl_b_push_read(t_rdfl_buffer *b, int fd, void *ptr, size_t s) {
   ssize_t	nb;
 
-  if (s > SSIZE_MAX)
-    return (ERR_SIZETOOBIG);
+#ifdef		DEVEL
+  if (s > SSIZE_MAX) return (ERRDEV_SIZETOOBIG);
+#endif
   if ((nb = read(fd, ptr, s)) == -1) {
     // TODO read must check for following errors:
     // EAGAIN E_WOULDBLOCK

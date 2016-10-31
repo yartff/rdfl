@@ -6,6 +6,7 @@ CMD_CC		=		gcc
 CMD_RM		=		@rm -rfv
 
 SRC		=		main_test.c				\
+				test_0-devel.c				\
 				test_1-allavailable_reader.c		\
 				test_2-inplace_reader.c			\
 				test_3-buffer-elasticity_tester.c	\
@@ -20,13 +21,14 @@ OBJ		=		$(SRC:.c=.o)
 LD_FLAGS	+=		-lrdfl
 CFLAGS		+=		-Wall -Wextra
 CFLAGS		+=		-I$(INCDIR)
-CFLAGS		+=		-g3
+CFLAGS		+=		-DDEVEL
+#CFLAGS		+=		-g3
 
 $(TEST):		$(OBJ)
 	$(CMD_CC) $(OBJ) -L$(LIBDIR) $(LD_FLAGS) -o $(TEST)
 
 exec:			$(TEST)
-	@env "LD_LIBRARY_PATH=$(LIBDIR)" ./$(TEST) 
+	@env "LD_LIBRARY_PATH=$(LIBDIR)" ./$(TEST)
 
 valexec:		$(TEST)
 	@env "LD_LIBRARY_PATH=$(LIBDIR)" valgrind ./$(TEST) 

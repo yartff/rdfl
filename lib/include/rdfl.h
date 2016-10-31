@@ -2,21 +2,21 @@
 # define		__RDFL_H_
 
 # include		<stdio.h>
-# include		<unistd.h>
+# include		"rdfl_status_codes.h"
 # include		"rdfl_buffer.h"
 # include		"rdfl_network.h"
-# include		"rdfl_status_codes.h"
 
+# define		RDFL_OPT_CANCEL(value, opt)	(value & ~opt)
+# define		RDFL_OPT_CONTAINALL(value, opt)	((value & opt) == opt)
 # define		RDFL_OPT_ISSET(value, opt)	(value & opt)
 // Don't change settings at runtime. No checks made for optimization purposes
 # define		RDFL_OPT_SET(value, opt)	(value |= opt)
+
+// Can't use this one with sevel opts.
 # define		RDFL_OPT_UNSET(value, opt)	\
   do { \
     if (RDFL_OPT_ISSET(value, opt)) value ^= opt; \
   } while (0);
-#define			RDFL_OPT_CANCEL(value, opt)	(value & ~opt)
-
-# define		RDFL_OPT_CONTAINALL(value, opt)	((value & opt) == opt)
 
 typedef struct		s_comments {
   char			*beg;
@@ -76,8 +76,10 @@ rdflret_t	rdfl_load(t_rdfl *, int fd, e_rdflsettings, e_rdflerrors *);
 rdflret_t	rdfl_load_fileptr(t_rdfl *, FILE *file_ptr, e_rdflsettings, e_rdflerrors *);
 rdflret_t	rdfl_load_path(t_rdfl *, const char *path, e_rdflsettings, e_rdflerrors *);
 rdflret_t	rdfl_load_connect(t_rdfl *, const char *, int, e_rdflsettings, e_rdflerrors *);
-
+# ifndef	DEVEL
 void		rdfl_clean(t_rdfl *obj);
+# endif
+
 int		rdfl_eofreached(t_rdfl *obj);
 
 int		rdfl_set_timeout(t_rdfl *, ssize_t timeout);

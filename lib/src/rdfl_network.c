@@ -8,6 +8,7 @@
 #include	<netdb.h>
 #include	<arpa/inet.h>
 #include	<stdlib.h>
+#include	<unistd.h>
 #include	<string.h>
 #include	"rdfl_local.h"
 #include	"rdfl_network.h"
@@ -108,6 +109,7 @@ rdfl_nw_openconnection(const char *ip, int port) {
   int			fd_sock;
 
   // TODO signal(SIGPIPE) ??
+  // TODO Add precision for ERR_CONNECTION
   if (!(ent = getprotobyname("TCP"))
       || (fd_sock = socket(AF_INET, SOCK_STREAM, ent->p_proto)) == -1)
     return (ERR_CONNECTION);

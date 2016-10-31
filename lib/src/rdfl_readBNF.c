@@ -265,7 +265,7 @@ rdfl_freeBNF(t_rdfl_bnf *productions) {
   }
 }
 
-// #ifdef	DEVEL
+#ifdef	DEVEL
 
 static void	_dump_rule(tl_orexpr *, unsigned int, int);
 static
@@ -332,4 +332,4 @@ rdfl_readBNF_dump(t_rdfl_bnf *bnf) {
     bnf = bnf->next;
   }
 }
-// #endif
+#endif

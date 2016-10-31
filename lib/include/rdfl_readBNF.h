@@ -42,10 +42,10 @@ typedef struct 		sl_prod {
 // BNF
 t_rdfl_bnf	*rdfl_readBNF(t_rdfl *);
 void		rdfl_freeBNF(t_rdfl_bnf *);
-// #ifdef		DEVEL
-void		rdfl_readBNF_dump(t_rdfl_bnf *);
-//#endif
 ssize_t		rdfl_applyBNF(t_rdfl_bnf *, t_rdfl *, char *);
 t_rdfl_bnf	*_seek_target(t_rdfl_bnf *, char *);
+# ifdef		DEVEL
+void		rdfl_readBNF_dump(t_rdfl_bnf *);
+# endif
 
 #endif		/* !__RDFL_READBNF_H_ */

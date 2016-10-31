@@ -1,11 +1,14 @@
-#include	<fcntl.h>
+
+#include	<sys/types.h>                                                    
+#include	<sys/stat.h>                                                     
+#include	<fcntl.h> 
 #include	<unistd.h>
 #include	<stdlib.h>
 #include	<string.h>
-#include	"rdfl_local.h"
-#include	"rdfl_context.h"
-#include	"rdfl_network.h"
 #include	"rdfl.h"
+#include	"rdfl_context.h"
+#include	"rdfl_local.h"
+#include	"rdfl_devel.h"
 
 static void _rdfl_close(t_rdfl *);
 //
@@ -98,6 +101,7 @@ rdfl_flush_firstbuffer_alloc(t_rdfl *obj, ssize_t *count_value) {
   return (ptr);
 }
 
+// inline
 void *
 rdfl_getinplace_next_chunk(t_rdfl *obj, size_t *s, size_t *total_s) {
   void		*ptr;
@@ -192,7 +196,7 @@ _read_noextend(t_rdfl *obj, size_t consume) {
   if (!s) { return (ERR_NOSPACELEFT); }
   if ((total = rdfl_push_read(obj, ptr, s)) < 0)
     return (total);
-#if 0
+#if 0 // TODO
   if (RDFL_OPT_ISSET(obj->settings, RDFL_FILLFREESPACE) && total == s) {
     ptr = rdfl_b_buffer_getchunk(&obj->data, &s);
     if (!s) return ((size_t)ret);
@@ -226,7 +230,6 @@ _read_monitoring_allavail(t_rdfl *obj, e_rdflerrors *err) {
   if (nw_ret <= 0) {
     if (err) {
       *err = (nw_ret ? nw_ret : VAL_LAST_READ_0);
-      // *err = ((nw_ret == 0) * VAL_LAST_READ_0 + nw_ret);
       return (total);
     }
     return (nw_ret > VAL ? nw_ret : total);
@@ -262,9 +265,15 @@ _rdfl_comments_clean(t_comments *obj) {
   free(obj);
 }
 
+#ifdef	DEVEL
+e_rdflerrors
+#else
 void
+#endif
 rdfl_clean(t_rdfl *obj) {
-  if (!obj) return ;
+#ifdef	DEVEL
+  if (!obj) return (ERRDEV_NULLOBJECT);
+#endif
   if (obj->nw != NULL) {
     rdfl_nw_clean(obj->nw);
     free(obj->nw);
@@ -274,6 +283,9 @@ rdfl_clean(t_rdfl *obj) {
   rdfl_buffer_clean(&obj->data);
   if (RDFL_OPT_ISSET(obj->settings, RDFL_LOC_ALLOC))
     free(obj);
+#ifdef	DEVEL
+  return (ERR_NONE);
+#endif
 }
 
 // Constructors
@@ -349,7 +361,7 @@ rdfl_load_connect(t_rdfl *new, const char *ip, int port, e_rdflsettings settings
 // Opt setters
 //
 void	rdfl_init(t_rdfl *dest) {
-#ifdef DEVEL
+#ifdef	DEVEL
   if (!dest) return ;
 #endif
   static t_rdfl_values		v = {
@@ -360,7 +372,7 @@ void	rdfl_init(t_rdfl *dest) {
   dest->nw = NULL;
   dest->settings = RDFL_NONE;
   dest->fd = -1;
-#ifdef DEVEL
+#ifdef	DEVEL
   fprintf(stdout, "RDFL Devel version. Read the wiki (later...) for more infos.\n");
 #endif
 }
@@ -381,7 +393,7 @@ void	rdfl_set_buffsize(t_rdfl *r, ssize_t buffsize)
 { r->v.buffsize = ((buffsize == 0) ? RDFL_DEFAULT_BUFFSIZE : buffsize); }
 
 int	rdfl_set_skip(t_rdfl *r, size_t skip) {
-#ifdef		DEVEL
+#ifdef	DEVEL
   if (RDFL_OPT_ISSET(r->settings, RDFL_CONTEXT))
     return (ERRDEV_BADFLAGS);
 #endif

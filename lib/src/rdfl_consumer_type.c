@@ -1,6 +1,8 @@
+#include		<unistd.h>
 #include		<string.h>
-#include		"rdfl_buffer_access.h"
+#include		"rdfl_local.h"
 #include		"rdfl_consumer.h"
+#include		"rdfl_buffer_access.h"
 
 #define		PTYPE(p)	((struct s_ct_readString *)p)
 struct		s_ct_readString {

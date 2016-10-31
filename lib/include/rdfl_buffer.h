@@ -1,8 +1,9 @@
-#ifndef		__RDFL_BUFFER_H_
-# define	__RDFL_BUFFER_H_
+#ifndef			__RDFL_BUFFER_H_
+# define		__RDFL_BUFFER_H_
 
-# define	RDFL_IS_ASCII_PRINTABLECHAR(c) ((c) >= ' ' && (c) <= '~')
-# define	RDFL_IS_ASCII_NODISPLAYCHAR(c) (((c) == '\n') || ((c) == '\t'))
+# include		<unistd.h>
+# define		RDFL_IS_ASCII_PRINTABLECHAR(c) ((c) >= ' ' && (c) <= '~')
+# define		RDFL_IS_ASCII_NODISPLAYCHAR(c) (((c) == '\n') || ((c) == '\t'))
 
 typedef	ssize_t		ctxid_t;
 typedef struct		s_ctxstack {
@@ -42,24 +43,23 @@ typedef struct		{
   t_rdfl_cm		consumer;
 }			t_rdfl_buffer;
 
+# ifndef		DEVEL
+void			rdfl_buffer_clean(t_rdfl_buffer *);
+# endif
 // Constructor, Destructor and Cleaner
-int		rdfl_buffer_init(t_rdfl_buffer *, size_t);
-int		rdfl_b_add(t_rdfl_buffer *, size_t);
-void		rdfl_buffer_clean(t_rdfl_buffer *);
-void		rdfl_b_fullclean_if_empty(t_rdfl_buffer *);
+int			rdfl_buffer_init(t_rdfl_buffer *, size_t);
+int			rdfl_b_add(t_rdfl_buffer *, size_t);
+void			rdfl_b_fullclean_if_empty(t_rdfl_buffer *);
 
 // Buffer
-void		*rdfl_b_buffer_getchunk(t_rdfl_buffer *, size_t *);
-void		*rdfl_b_buffer_getchunk_extend(t_rdfl_buffer *, size_t *, size_t);
-ssize_t		rdfl_b_push_read(t_rdfl_buffer *, int , void *, size_t);
-int		rdfl_b_set_skip(t_rdfl_buffer *, size_t);
+void			*rdfl_b_buffer_getchunk(t_rdfl_buffer *, size_t *);
+void			*rdfl_b_buffer_getchunk_extend(t_rdfl_buffer *, size_t *, size_t);
+ssize_t			rdfl_b_push_read(t_rdfl_buffer *, int , void *, size_t);
+int			rdfl_b_set_skip(t_rdfl_buffer *, size_t);
 
 // Consumer
-void		*rdfl_b_next_chunk(t_rdfl_buffer *, size_t *);
-void		rdfl_b_consume_size(t_rdfl_buffer *, size_t);
-void		*rdfl_b_consume_firstbuffer_alloc(t_rdfl_buffer *, ssize_t *);
-void		*rdfl_b_consume_all_alloc(t_rdfl_buffer *b, ssize_t *count_value);
-
-void		rdfl_b_print_buffers(t_rdfl_buffer *);
+void			rdfl_b_consume_size(t_rdfl_buffer *, size_t);
+void			*rdfl_b_consume_firstbuffer_alloc(t_rdfl_buffer *, ssize_t *);
+void			*rdfl_b_consume_all_alloc(t_rdfl_buffer *b, ssize_t *count_value);
 
 #endif			/* !__RDFL_BUFFER_H_ */

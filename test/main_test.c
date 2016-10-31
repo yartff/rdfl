@@ -3,6 +3,7 @@
 #include	"tester.h"
 
 int	(*test_functions[])(void) = {
+  &test_0__devel,
   /*
   &test_1__allavailable_reader,
   &test_2__inplace_reader,

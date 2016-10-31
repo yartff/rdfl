@@ -4,8 +4,6 @@
 # include		<sys/select.h>
 # include		<sys/time.h>
 # include		<sys/types.h>
-# include		<unistd.h>
-# include		"rdfl_status_codes.h"
 
 typedef			struct {
   struct timeval	*timeout;

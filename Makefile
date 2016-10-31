@@ -23,4 +23,4 @@ clean:
 	@make fclean -C $(LIB_DIR) --no-print-directory
 	@make fclean -C $(TEST_DIR) --no-print-directory
 
-.PHONY:		lib test devel debug devall clean
+.PHONY:		lib devel debug devall clean

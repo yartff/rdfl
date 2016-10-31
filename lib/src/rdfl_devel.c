@@ -1,4 +1,4 @@
-// #ifdef		DEVEL
+#ifdef		DEVEL
 
 # include	<unistd.h>
 # include	<limits.h>
@@ -94,6 +94,7 @@ print_buffer(const char *str, size_t count) {
   printf("\033[0m");
 }
 
+static
 void
 rdfl_print_contexts(t_rdfl_buffer *b) {
   t_ctxstack	*tmp;
@@ -167,8 +168,9 @@ rdfl_b_print_buffers(t_rdfl_buffer *b) {
 
 void
 rdfl_printbufferstate(t_rdfl *obj) {
+  if (!obj) return ;
   rdfl_b_print_buffers(&obj->data);
   rdfl_print_contexts(&obj->data);
 }
 
-// #endif
+#endif

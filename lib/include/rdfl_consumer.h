@@ -1,17 +1,13 @@
 #ifndef			__RDFL_CONSUMER_H_
 # define		__RDFL_CONSUMER_H_
 
-# include		<unistd.h>
-# include		"rdfl_local.h"
-# include		"rdfl.h"
 
 // READ_AS_TOKEN
 
 // consumer
-
-ssize_t		rdfl_csm_number(t_rdfl *, int);
-ssize_t		rdfl_csm_str(t_rdfl *, const char *);
-ssize_t		rdfl_csm_float(t_rdfl *, float);
+ssize_t			rdfl_csm_number(t_rdfl *, int);
+ssize_t			rdfl_csm_str(t_rdfl *, const char *);
+ssize_t			rdfl_csm_float(t_rdfl *, float);
 
 // consumer_type
 typedef		enum {

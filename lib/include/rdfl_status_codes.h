@@ -26,14 +26,12 @@ typedef			enum {
   RDFL_LAST		= 1 << 17,
 }			e_rdflsettings;
 
-// TODO DEVEL-version-only flags
 typedef			enum {
   ERR_NONE		= 0,
-  ERR_SIZETOOBIG	= -1, // DEVEL?
   ERR_READ		= -2,
   ERR_MEMORY		= -3,
   ERR_BADF		= -4,
-  ERR_NOSPACELEFT	= -5, // DEVEL?
+  ERR_NOSPACELEFT	= -5,
   ERR_SELECT		= -6,
   ERR_OPEN		= -7,
   ERR_TIMER		= -8,
@@ -43,7 +41,10 @@ typedef			enum {
 
 # ifdef			DEVEL
   ERRDEV_OUTOFBOUND	= -30,
-  ERRDEV_BADFLAGS	= -31, // DEVEL
+  ERRDEV_NULLOBJECT	= -31,
+  ERRDEV_BADFLAGS	= -32,
+  ERRDEV_BAD_CTXID	= -33,
+  ERRDEV_SIZETOOBIG	= -34,
 # endif
 
   ERR_MISC		= -99,

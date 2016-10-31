@@ -73,7 +73,7 @@ _iterate_chunk_routine(t_rdfl *obj, int (*callback)(void *, size_t, void *), voi
       return (ERR_NONE);
   if ((it = obj->data.consumer.raw->next) != NULL) {
     while (it->next) {
-      // vvvvvvvvvvv TODO: this check might be useless
+      //  vvvvvvvv vv	TODO: this check might be useless
       if (it->size && !(proceed = _iterate_autoskip(it->data, it->size, callback,
 	      data, &skipped, total_skip)))
 	return (ERR_NONE);
@@ -192,6 +192,8 @@ _iterate_chunk(t_rdfl *obj, int (*callback)(void *, size_t, void *), void *data,
 	return (ret);
     }
 #ifdef		DEVEL
+  } else if (RDFL_OPT_ISSET(opt, RDFL_P_SETCONTEXT)) {
+    return (ERRDEV_BADFLAGS);
   }
 #endif
   ret = _iterate_chunk_routine(obj, callback, data);
@@ -213,5 +215,3 @@ _iterate_extract(t_rdfl *obj, void **extract, ssize_t s, e_bacc_options opt) {
     rdfl_b_consume_size(&obj->data, s);
   return (ERR_NONE);
 }
-
-

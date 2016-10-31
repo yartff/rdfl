@@ -1,9 +1,8 @@
 #ifndef			__RDFL_LOCAL_H_
 # define		__RDFL_LOCAL_H_
 
-# include		"rdfl_status_codes.h"
 # include		"rdfl.h"
-
+# include		"rdfl_status_codes.h"
 # define		RDFL_DEFAULT_BUFFSIZE	4096 // (bytes)
 # define		RDFL_DEFAULT_TIMEOUT	-1 // (blocking reads)
 
@@ -23,5 +22,6 @@ enum {
 
 int			_iterate_chunk(t_rdfl *, int (*)(void *, size_t, void *), void *, e_bacc_options opt);
 int			_iterate_extract(t_rdfl *, void **, ssize_t, e_bacc_options);
+void			*rdfl_b_next_chunk(t_rdfl_buffer *, size_t *);
 
 #endif			/* !__RDFL_LOCAL_H_ */
