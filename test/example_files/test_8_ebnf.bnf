@@ -1,0 +1,14 @@
+/*
+identifier	::=	[ :letter ]+ ;
+type		::=	"int" | "char" | "ssize_t";
+param		::=	type identifier;
+func		::=	type identifier '(' [ param ]? [ ',' param ]* ')' ';' ;
+*/
+
+ab() ::= "a";
+truc::= "g";
+test		::=	ab truc;
+
+/*
+.fail .return .rule
+*/

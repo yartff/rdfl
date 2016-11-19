@@ -89,7 +89,7 @@ void		*rdfl_flush_buffers_alloc(t_rdfl *obj, ssize_t *count_value);
 void		*rdfl_getinplace_next_chunk(t_rdfl *, size_t *, size_t *);
 void		rdfl_force_consume_size(t_rdfl *obj, size_t s);
 
-int		rdfl_set_comment(t_rdfl *, const char *, const char *);
+int		rdfl_add_comment(t_rdfl *, const char *, const char *);
 // TODO rdfl_inputuserdata(t_rdfl *obj, void *, size_t s);
 
 #endif			/* !__RDFL_H_ */

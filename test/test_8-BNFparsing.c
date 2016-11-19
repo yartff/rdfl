@@ -6,16 +6,30 @@
 #include	"rdfl_devel.h"
 
 #include	"rdfl_context.h"
+
+static
 int
-test_8__BNFparsing(void) {
+routine(const char *bnf_path, const char *bnf_applied) {
   t_rdfl		example;
-  // t_rdfl		feed;
-  // t_rdfl_bnf		*bnf = NULL;
+  t_rdfl_bnf		*bnf = NULL;
+  (void)bnf_applied;
 
   rdfl_init(&example);
-  rdfl_set_buffsize(&example, 140);
-  if (rdfl_load_path(&example, "example_files/test_8_bash.bnf", RDFL_AUTOREAD | RDFL_ALL_AVAILABLE | RDFL_CONTEXT, NULL))
+  rdfl_set_buffsize(&example, 38);
+  if (rdfl_load_path(&example, bnf_path, RDFL_AUTOREAD, NULL))
     return (EXIT_FAILURE);
+  bnf = rdfl_readBNF(&example);
+  rdfl_readBNF_dump(bnf);
+  rdfl_freeBNF(bnf);
+  rdfl_printbufferstate(&example);
+  rdfl_clean(&example);
+  return (0);
+}
+
+int
+test_8__BNFparsing(void) {
+  // t_rdfl		feed;
+
   /*
   rdfl_init(&feed);
   rdfl_set_buffsize(&feed, 15);
@@ -23,25 +37,10 @@ test_8__BNFparsing(void) {
 	RDFL_CONTEXT | RDFL_AUTOREAD | RDFL_AUTOCLEAR_BLANKS, NULL))
     return (EXIT_FAILURE);
     */
-  printf("%zd\n", _read_all_available(&example, NULL));
-  // bnf = rdfl_readBNF(&example);
-  // rdfl_readBNF_dump(bnf);
   // fprintf(stdout, "\n[[%zd]]\n", rdfl_applyBNF(bnf, &feed, "redirection"));
   // rdfl_printbufferstate(&feed);
-  // rdfl_freeBNF(bnf);
-
-
-
-  rdfl_set_skip(&example, 30);
-  rdfl_pushcontext(&example);
-  rdfl_set_skip(&example, 38);
-  rdfl_pushcontext(&example);
-  rdfl_set_skip(&example, 30);
-  rdfl_pushcontext(&example);
-
-
-  rdfl_printbufferstate(&example);
-  rdfl_clean(&example);
   // rdfl_clean(&feed);
+  routine("example_files/test_8_bash.bnf", NULL);
+  routine("example_files/test_8_ebnf.bnf", NULL);
   return (0);
 }

@@ -401,7 +401,7 @@ int	rdfl_set_skip(t_rdfl *r, size_t skip) {
 }
 
 int
-rdfl_set_comment(t_rdfl *r, const char *begin, const char *end) {
+rdfl_add_comment(t_rdfl *r, const char *begin, const char *end) {
   t_comments		*new;
   char			*strb = NULL, *stre;
 

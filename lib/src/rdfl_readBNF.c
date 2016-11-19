@@ -3,17 +3,15 @@
 #include		"rdfl_buffer_access.h"
 #include		"rdfl_consumer.h"
 #include		"rdfl_readBNF.h"
+#include		"rdfl_local.h"
 
 #define		OP_RULE			"::="
 #define		OP_RULE_END		";"
 #define		OP_OR			"|"
-#define		OP_OPT_BEG		"["
-#define		OP_OPT_END		"]"
-#define		OP_REP_BEG		"{"
-#define		OP_REP_END		"}"
+#define		OP_EXPR_BEG		"["
+#define		OP_EXPR_END		"]"
 #define		OP_GRP_BEG		"("
 #define		OP_GRP_END		")"
-#define		READ_OPE(obj, c, opt)	(rdfl_bacc_readptr(obj, c, sizeof(c) - 1, opt) > 0)
 static int _link_exprs(t_rdfl_bnf *tmp, tl_orexpr *);
 
 t_rdfl_bnf *
@@ -43,7 +41,7 @@ _link_target(t_rdfl_bnf *tmp, tl_fact *facts) {
       if (!(facts->target = (void *)_seek_target_free(tmp, ((char *)facts->target))))
 	return (EXIT_FAILURE);
     }
-    else if (facts->type >= FACT_EXPR_OPT) {
+    else if (facts->type >= FACT_EXPRS) {
       if (_link_exprs(tmp, ((tl_orexpr *)facts->target)) == EXIT_FAILURE)
 	return (EXIT_FAILURE);
     }
@@ -76,7 +74,6 @@ _link_factors(t_rdfl_bnf *tmp) {
   return (EXIT_SUCCESS);
 }
 
-static const e_bacc_options	OPTS = RDFL_P_NULLTERMINATED | RDFL_P_CONSUME;
 static tl_orexpr		*_read_or_expression(t_rdfl *obj);
 static void			_free_rule(tl_orexpr *exprs);
 
@@ -116,6 +113,17 @@ _read_couple(t_rdfl *obj, char *beg, char *end) {
   return (target);
 }
 
+// TODO rdfl_readBNF_builtins.c
+static
+ssize_t
+read_builtin_syntax(t_rdfl *obj, void **target) {
+  ssize_t		ret;
+  if ((ret = READ_OPE(obj, ":", OPTS)) <= 0) return (ret);
+  if ((ret = rdfl_ct_readIdentifier(obj, target, OPTS | RDFL_P_IGNORE_PREDATA)) <= 0)
+    return ((!ret) ? ERRBNF_SYNTAX : ret);
+  return (1);
+}
+
 tl_fact *
 read_factor(t_rdfl *obj) {
   tl_fact	*fact;
@@ -123,12 +131,19 @@ read_factor(t_rdfl *obj) {
   if (!(fact = malloc(sizeof(*fact))))
     return (NULL);
   fact->next = NULL;
+  if (read_builtin_syntax(obj, &fact->target) > 0) {
+    if (!fact->target)
+      goto free_fact;
+    fact->type = FACT_RULE_BUILTIN;
+    return (fact);
+  }
   if (rdfl_ct_readIdentifier(obj, &fact->target, OPTS) > 0) {
     if (!fact->target)
       goto free_fact;
     fact->type = FACT_RULE;
     return (fact);
   }
+  // TODO builtin readString(whatever the quote)
   if (rdfl_ct_readString(obj, &fact->target, OPTS) > 0
       || rdfl_ct_readString(obj, &fact->target, OPTS | RDFL_PSTR_SIMPLE_QUOTE_STR) > 0) {
     if (!fact->target)
@@ -136,16 +151,14 @@ read_factor(t_rdfl *obj) {
     fact->type = FACT_LITERAL;
     return (fact);
   }
-  if ((fact->target = (void *)_read_couple(obj, OP_OPT_BEG, OP_OPT_END)) != NULL) {
-    fact->type = FACT_EXPR_OPT;
-    return (fact);
-  }
-  if ((fact->target = (void *)_read_couple(obj, OP_REP_BEG, OP_REP_END)) != NULL) {
-    fact->type = FACT_EXPR_REP;
-    return (fact);
-  }
-  if ((fact->target = (void *)_read_couple(obj, OP_GRP_BEG, OP_GRP_END)) != NULL) {
-    fact->type = FACT_EXPR_GROUP;
+  if ((fact->target = (void *)_read_couple(obj, OP_EXPR_BEG, OP_EXPR_END)) != NULL) {
+    int		opfeed = ((READ_OPE(obj, "+", OPTS) > 0) ? FACT_EXPR_NGT
+	: (READ_OPE(obj, "*", OPTS) > 0) ? FACT_EXPR_NGTE
+	: (READ_OPE(obj, "?", OPTS) > 0) ? FACT_EXPR_OPT
+	: -1);
+    if (opfeed == -1)
+      goto free_fact;
+    fact->type = opfeed;
     return (fact);
   }
 free_fact:
@@ -176,6 +189,7 @@ static
 t_rdfl_bnf *
 read_production(t_rdfl *obj) {
   t_rdfl_bnf	*prod;
+  e_rdflerrors	e = ERR_NONE;
 
   if (!(prod = malloc(sizeof(*prod))))
     return (NULL);
@@ -184,6 +198,8 @@ read_production(t_rdfl *obj) {
       || !prod->identifier) {
     goto free_prod;
   }
+  if ((!(prod->params = read_params(obj, &e))) && (e != ERR_NONE))
+    goto free_prod;
   if (READ_OPE(obj, OP_RULE, OPTS) <= 0)
     goto free_prod;
   if (!(prod->exprs = _read_orloop(obj)))
@@ -203,8 +219,8 @@ rdfl_readBNF(t_rdfl *obj) {
   t_rdfl_bnf	*it, *productions;
 
   RDFL_OPT_SET(obj->settings, RDFL_AUTOCLEAR_BLANKS);
-  if (rdfl_set_comment(obj, "##", "\n") != ERR_NONE
-      || rdfl_set_comment(obj, "/*", "*/") != ERR_NONE)
+  if (rdfl_add_comment(obj, "##", "\n") != ERR_NONE
+      || rdfl_add_comment(obj, "/*", "*/") != ERR_NONE)
     return (NULL);
   if ((productions = read_production(obj)) == NULL) {
     return (NULL);
@@ -231,10 +247,11 @@ _free_factors(tl_fact *facts) {
   while (facts) {
     fact_tmp = facts;
     facts = facts->next;
-    if (fact_tmp->type == FACT_RULE || fact_tmp->type == FACT_LITERAL)
-      free(fact_tmp->target);
-    else if (fact_tmp->type >= FACT_EXPR_OPT)
+    if (fact_tmp->type >= FACT_EXPRS)
       _free_rule(((tl_orexpr *)fact_tmp->target));
+    else if (fact_tmp->type == FACT_RULE || fact_tmp->type == FACT_LITERAL
+	|| fact_tmp->type == FACT_RULE_BUILTIN)
+      free(fact_tmp->target);
     free(fact_tmp);
   }
 }
@@ -260,43 +277,37 @@ rdfl_freeBNF(t_rdfl_bnf *productions) {
     p = productions;
     productions = productions->next;
     _free_rule(p->exprs);
+    _free_param_list(p->params);
     free(p->identifier);
     free(p);
   }
 }
-
 #ifdef	DEVEL
 
-static void	_dump_rule(tl_orexpr *, unsigned int, int);
-static
-void
-_dump_level(unsigned int level) {
-  while (level) {
-    printf(" -");
-    --level;
-  }
-  printf("> ");
-}
+static void	_dump_rule(tl_orexpr *, unsigned int);
 
 static
 void
 _dump_factors(tl_fact *facts, unsigned int level) {
+  tl_fact	*first = facts;
   while (facts) {
+    if (facts != first)
+      printf(" ");
     if (facts->type == FACT_RULE)
-      printf("+%s ", ((char *)facts->target));
+      printf("<?>%s", ((char *)facts->target));
+    else if (facts->type == FACT_RULE_BUILTIN)
+      printf(":%s", ((char *)facts->target));
     else if (facts->type == FACT_RULE_LINKED)
-      printf("+%s ", (((t_rdfl_bnf *)facts->target)->identifier));
+      printf("%s", (((t_rdfl_bnf *)facts->target)->identifier));
     else if (facts->type == FACT_LITERAL)
-      printf("_%s ", ((char *)facts->target));
-    else {
-      if (facts->type == FACT_EXPR_OPT)
-	printf("[]<");
-      if (facts->type == FACT_EXPR_REP)
-	printf("{}<");
-      if (facts->type == FACT_EXPR_GROUP)
-	printf("()<");
-      _dump_rule(((tl_orexpr *)facts->target), level + 1, 0);
-      printf("> ");
+      printf("%s", ((char *)facts->target));
+    else if (facts->type >= FACT_EXPRS) {
+      printf("[");
+      _dump_rule(((tl_orexpr *)facts->target), level + 1);
+      printf("]%c ", ((facts->type == FACT_EXPR_OPT) ? '?'
+	    : (facts->type == FACT_EXPR_NGT) ? '+'
+	    : (facts->type == FACT_EXPR_NGTE) ? '*'
+	    : 'x'));
     }
     facts = facts->next;
   }
@@ -304,20 +315,24 @@ _dump_factors(tl_fact *facts, unsigned int level) {
 
 static
 void
-_dump_rule(tl_orexpr *exprs, unsigned int level, int pnl) {
+_dump_rule(tl_orexpr *exprs, unsigned int level) {
   int i = 0;
   while (exprs) {
-    if (pnl == 1)
-      _dump_level(level);
-    else if (i) {
-      printf("| ");
-    }
+    if (i) printf(" | ");
     i = 1;
     _dump_factors(exprs->factors, level);
-    if (pnl == 1)
-      printf("\n");
     exprs = exprs->next;
   }
+}
+
+static
+void
+_dump_params(tl_param *prm) {
+  printf("(%s %s", prm->type, prm->id);
+  while ((prm = prm->next) != NULL) {
+    printf(", %s %s", prm->type, prm->id);
+  }
+  printf(")");
 }
 
 void
@@ -327,8 +342,12 @@ rdfl_readBNF_dump(t_rdfl_bnf *bnf) {
     return ;
   }
   while (bnf) {
-    printf("\n=======\nRule: %s\n", bnf->identifier);
-    _dump_rule(bnf->exprs, 0, 1);
+    printf("%s", bnf->identifier);
+    if (bnf->params)
+      _dump_params(bnf->params);
+    printf(" ::= ");
+    _dump_rule(bnf->exprs, 0);
+    printf(";\n");
     bnf = bnf->next;
   }
 }

@@ -17,6 +17,7 @@ SRC		=		\
 				$(SRCDIR)rdfl_consumer_type.c		\
 				$(SRCDIR)rdfl_context.c			\
 				$(SRCDIR)rdfl_readBNF.c			\
+				$(SRCDIR)rdfl_readBNF_params.c		\
 				$(SRCDIR)rdfl_applyBNF.c
 
 OBJ		=		$(SRC:.c=.o)

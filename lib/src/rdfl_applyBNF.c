@@ -29,7 +29,7 @@ _eval_expr_opt(tl_orexpr *expr, t_rdfl_bnf *bnf, t_rdfl *fl) {
 
 static
 ssize_t
-_eval_expr_rep(tl_orexpr *expr, t_rdfl_bnf *bnf, t_rdfl *fl) {
+_eval_expr_ngte(tl_orexpr *expr, t_rdfl_bnf *bnf, t_rdfl *fl) {
   ssize_t	ret;
   while ((ret = _eval_orexpr(expr, bnf, fl)) >= 0) {
     if (ret == 0)
@@ -40,10 +40,12 @@ _eval_expr_rep(tl_orexpr *expr, t_rdfl_bnf *bnf, t_rdfl *fl) {
 
 static
 ssize_t
-_eval_expr_group(tl_orexpr *expr, t_rdfl_bnf *bnf, t_rdfl *fl) {
-  // ssize_t	ret;
-  // TODO use context | RDFL_P_SETCONTEXT
-  return (_eval_orexpr(expr, bnf, fl));
+_eval_expr_ngt(tl_orexpr *expr, t_rdfl_bnf *bnf, t_rdfl *fl) {
+  ssize_t	ret;
+  if ((ret = _eval_orexpr(expr, bnf, fl)) <= 0) {
+    return (ret);
+  }
+  return (_eval_expr_ngte(expr, bnf, fl));
 }
 
 #ifdef DEVEL
@@ -84,8 +86,8 @@ _eval_expr(tl_fact *fact, t_rdfl_bnf *bnf, t_rdfl *fl) {
     ret = ((fact->type == FACT_RULE_LINKED) ? _eval_rule(((t_rdfl_bnf *)fact->target), bnf, fl)
 	: (fact->type == FACT_LITERAL) ? _eval_expr_literal(((char *)fact->target), fl)
 	: (fact->type == FACT_EXPR_OPT) ? _eval_expr_opt(((tl_orexpr *)fact->target), bnf, fl)
-	: (fact->type == FACT_EXPR_REP) ? _eval_expr_rep(((tl_orexpr *)fact->target), bnf, fl)
-	: (fact->type == FACT_EXPR_GROUP) ? _eval_expr_group(((tl_orexpr *)fact->target), bnf, fl)
+	: (fact->type == FACT_EXPR_NGT) ? _eval_expr_ngt(((tl_orexpr *)fact->target), bnf, fl)
+	: (fact->type == FACT_EXPR_NGTE) ? _eval_expr_ngte(((tl_orexpr *)fact->target), bnf, fl)
 	: 0);
     // rdfl_printbufferstate(fl);
     if (ret > 0) {
@@ -136,6 +138,6 @@ rdfl_applyBNF(t_rdfl_bnf *bnf, t_rdfl *fl, char *id) {
   if (!bnf)
     return (ERR_MISC);
   if (!(rule = _seek_target(bnf, id)))
-    return (BNF_MISSINGID);
+    return (ERRBNF_MISSINGID);
   return (_eval_rule(rule, bnf, fl));
 }
