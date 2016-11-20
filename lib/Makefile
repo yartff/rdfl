@@ -7,18 +7,25 @@ INCDIR		=		include/
 CMD_CC		=		gcc
 CMD_RM		=		@rm -rfv
 
+SRC_BNF		=		$(SRCDIR)bnf/
+SRC_BC		=		$(SRCDIR)buffcons/
+SRC_RDFL	=		$(SRCDIR)reader/
+
 SRC		=		\
-				$(SRCDIR)rdfl.c				\
-				$(SRCDIR)rdfl_devel.c			\
-				$(SRCDIR)rdfl_buffer.c			\
-				$(SRCDIR)rdfl_network.c			\
-				$(SRCDIR)rdfl_buffer_access.c		\
-				$(SRCDIR)rdfl_buffer_iterate.c		\
-				$(SRCDIR)rdfl_consumer_type.c		\
-				$(SRCDIR)rdfl_context.c			\
-				$(SRCDIR)rdfl_readBNF.c			\
-				$(SRCDIR)rdfl_readBNF_params.c		\
-				$(SRCDIR)rdfl_applyBNF.c
+				$(SRC_RDFL)rdfl.c			\
+				$(SRC_RDFL)rdfl_network.c		\
+				$(SRC_RDFL)rdfl_devel.c			\
+				\
+				$(SRC_BC)rdfl_buffer.c			\
+				$(SRC_BC)rdfl_buffer_access.c		\
+				$(SRC_BC)rdfl_buffer_iterate.c		\
+				$(SRC_BC)rdfl_consumer_type.c		\
+				$(SRC_BC)rdfl_context.c			\
+				\
+				$(SRC_BNF)rdfl_bnf.c			\
+				$(SRC_BNF)rdfl_bnf_params.c		\
+				$(SRC_BNF)rdfl_bnf_run.c		\
+				$(SRC_BNF)rdfl_bnf_dump.c
 
 OBJ		=		$(SRC:.c=.o)
 

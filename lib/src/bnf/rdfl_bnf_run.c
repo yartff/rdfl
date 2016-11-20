@@ -3,7 +3,7 @@
 #include		"rdfl_buffer_access.h"
 #include		"rdfl_consumer.h"
 #include		"rdfl_context.h"
-#include		"rdfl_readBNF.h"
+#include		"rdfl_bnf.h"
 
 static const e_bacc_options	OPTS = RDFL_P_NULLTERMINATED;
 static ssize_t			_eval_orexpr(tl_orexpr *, t_rdfl_bnf *, t_rdfl *);

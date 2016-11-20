@@ -1,6 +1,8 @@
 #ifndef		__RDFL_READBNF_H_
 # define	__RDFL_READBNF_H_
 
+# include		"rdfl.h"
+
 typedef			enum {
   FACT_RULE		= 0,
   FACT_RULE_LINKED,

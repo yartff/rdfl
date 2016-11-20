@@ -2,7 +2,7 @@
 #include		<string.h>
 #include		"rdfl_buffer_access.h"
 #include		"rdfl_consumer.h"
-#include		"rdfl_readBNF.h"
+#include		"rdfl_bnf.h"
 #include		"rdfl_local.h"
 
 void

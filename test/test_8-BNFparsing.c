@@ -2,7 +2,7 @@
 #include	"tester.h"
 #include	"rdfl_consumer.h"
 #include	"rdfl_buffer_access.h"
-#include	"rdfl_readBNF.h"
+#include	"rdfl_bnf.h"
 #include	"rdfl_devel.h"
 
 #include	"rdfl_context.h"
@@ -40,7 +40,7 @@ test_8__BNFparsing(void) {
   // fprintf(stdout, "\n[[%zd]]\n", rdfl_applyBNF(bnf, &feed, "redirection"));
   // rdfl_printbufferstate(&feed);
   // rdfl_clean(&feed);
-  routine("example_files/test_8_bash.bnf", NULL);
+  //routine("example_files/test_8_bash.bnf", NULL);
   routine("example_files/test_8_ebnf.bnf", NULL);
   return (0);
 }
