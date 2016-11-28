@@ -17,7 +17,6 @@ _free_param_list(tl_param *p) {
   }
 }
 
-// doesn't init (*e)
 static
 tl_param *
 read_param_each(t_rdfl *obj, e_rdflerrors *e) {

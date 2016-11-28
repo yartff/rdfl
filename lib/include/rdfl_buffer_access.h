@@ -2,7 +2,7 @@
 # define		__RDFL_BUFFER_ACCESS_H_
 
 # include		"rdfl.h"
-void			*rdfl_bacc_getcontent(t_rdfl *, size_t *, size_t, e_bacc_options);
+void			*rdfl_bacc_getcontent(t_rdfl *, ssize_t *, size_t, e_bacc_options);
 int			rdfl_bacc_cmp(t_rdfl *, void *, size_t);
 int			rdfl_bacc_readptr(t_rdfl *, void *, size_t, e_bacc_options);
 size_t			rdfl_bacc_info_total(t_rdfl *);

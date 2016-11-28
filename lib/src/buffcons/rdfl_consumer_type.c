@@ -32,8 +32,6 @@ _cb__ct_readString_legacy(void *ptr, size_t s, void *data) { // rdfl_ct_readStri
       ++i;
       PTYPE(data)->return_value = PTYPE(data)->total + i - diff;
       PTYPE(data)->resultdata += (i - diff - 1);
-      // fprintf(stderr, "[CT STRING]{%zd (total: %zu)(return: %zu)}\n", i, PTYPE(data)->total,
-      //   PTYPE(data)->return_value);
       return (BACC_CB_STOP);
     }
     ++i;
@@ -44,9 +42,6 @@ _cb__ct_readString_legacy(void *ptr, size_t s, void *data) { // rdfl_ct_readStri
   return (BACC_CB_NEEDDATA);
 }
 
-inline static void _readString_init(struct s_ct_readString *d)
-{ d->total = 0; d->resultdata = 0; d->return_value = 0; }
-
 int
 _cb__ct_readString_cstyle(void *ptr, size_t s, void *data) {
   (void)ptr, (void)s, (void)data;
@@ -56,6 +51,9 @@ _cb__ct_readString_cstyle(void *ptr, size_t s, void *data) {
   return (BACC_CB_NEEDDATA);
 }
 #undef		PTYPE
+
+inline static void _readString_init(struct s_ct_readString *d)
+{ d->total = 0; d->resultdata = 0; d->return_value = 0; }
 
 ssize_t
 rdfl_ct_readString(t_rdfl *obj, void **extract, e_bacc_options bopt) {
@@ -69,7 +67,8 @@ rdfl_ct_readString(t_rdfl *obj, void **extract, e_bacc_options bopt) {
       return (data.return_value);
     return (VCSM_INCOMPLETE_TOKEN);
   }
-  _iterate_extract(obj, extract, data.return_value, bopt);
+  if (_iterate_extract(obj, extract, data.return_value, bopt) == ERR_MEMORY)
+    return (ERR_MEMORY);
   return (data.return_value);
 }
 
@@ -106,14 +105,16 @@ _cb__ct_readAllContained(void *ptr, size_t s, void *data) { // rdfl_ct_readAllCo
 ssize_t
 rdfl_ct_readAllContained(t_rdfl *obj, void **extract, const char *content, e_bacc_options bopt) {
   struct s_ct_readAllContained	data;
+  int		ret;
 
   data.return_value = 0;
   data.content = (void *)content;
   data.ctsize = strlen(content);
-  if (_iterate_chunk(obj, &_cb__ct_readAllContained, &data, bopt) < 0) {
-    return (VCSM_INCOMPLETE_TOKEN);
-  }
-  _iterate_extract(obj, extract, data.return_value, bopt);
+  if ((ret = _iterate_chunk(obj, &_cb__ct_readAllContained, &data, bopt)) < 0
+      && ret != VCSM_REACHED_EOF)
+    return (ret);
+  if (_iterate_extract(obj, extract, data.return_value, bopt) == ERR_MEMORY)
+    return (ERR_MEMORY);
   return (data.return_value);
 }
 
@@ -131,6 +132,7 @@ _cb__ct_readUntil(void *ptr, size_t s, void *data) { // rdfl_ct_readUntil
   size_t	i = 0;
   (void)ptr;
 
+  // while (str[i]) strstr(str + i)
   PTYPE(data)->obj->data.consumer.skip = PTYPE(data)->rebase_skip
     + PTYPE(data)->return_value;
   while (i < s) {
@@ -149,6 +151,7 @@ _cb__ct_readUntil(void *ptr, size_t s, void *data) { // rdfl_ct_readUntil
 }
 #undef		PTYPE
 
+// TODO redo this and its callback
 ssize_t
 rdfl_ct_readUntil(t_rdfl *obj, void **extract, void *ptr, size_t s, e_bacc_options opt) {
   struct s_ct_readUntil		data;
@@ -161,14 +164,14 @@ rdfl_ct_readUntil(t_rdfl *obj, void **extract, void *ptr, size_t s, e_bacc_optio
   data.s = s;
   data.obj = obj;
   data.rebase_skip = obj->data.consumer.skip;
-  if ((ret = _iterate_chunk(obj, &_cb__ct_readUntil, &data, opt)) < 0) {
-    obj->data.consumer.skip = data.rebase_skip;
+  ret = _iterate_chunk(obj, &_cb__ct_readUntil, &data, opt);
+  if (ret < 0) {
     if (ret == VCSM_REACHED_EOF)
-      return (data.return_value);
+      return (0);
     return (ret);
   }
-  obj->data.consumer.skip = data.rebase_skip;
-  _iterate_extract(obj, extract, data.return_value, opt);
+  if (_iterate_extract(obj, extract, data.return_value, opt) == ERR_MEMORY)
+    return (ERR_MEMORY);
   return (data.return_value);
 }
 
@@ -207,17 +210,17 @@ _cb__ct_readIdentifier(void *ptr, size_t s, void *data) { // rdfl_ct_readIdentif
 }
 #undef		PTYPE
 
+// TODO
 ssize_t
 rdfl_ct_readIdentifier(t_rdfl *obj, void **extract, e_bacc_options opt) {
   struct s_ct_readIdentifier	data;
   int				ret;
 
   data.return_value = 0;
-  if ((ret = _iterate_chunk(obj, &_cb__ct_readIdentifier, &data, opt)) < 0) {
-    if (ret == VCSM_REACHED_EOF)
-      return (data.return_value);
-    return (VCSM_INCOMPLETE_TOKEN);
-  }
-  _iterate_extract(obj, extract, data.return_value, opt);
+  if ((ret = _iterate_chunk(obj, &_cb__ct_readIdentifier, &data, opt)) < 0
+      && ret != VCSM_REACHED_EOF)
+    return (ret);
+  if (_iterate_extract(obj, extract, data.return_value, opt) == ERR_MEMORY)
+    return (ERR_MEMORY);
   return (data.return_value);
 }

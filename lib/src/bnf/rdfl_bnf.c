@@ -5,7 +5,9 @@
 #include		"rdfl_bnf.h"
 #include		"rdfl_local.h"
 
-static int _link_exprs(t_rdfl_bnf *tmp, tl_orexpr *);
+static int		_link_exprs(t_rdfl_bnf *tmp, tl_orexpr *);
+tl_fact			*_read_factor(t_rdfl *, e_rdflerrors *);
+static void		_free_rule(tl_orexpr *);
 
 t_rdfl_bnf *
 _seek_target(t_rdfl_bnf *bnf, char *id) {
@@ -67,20 +69,38 @@ _link_factors(t_rdfl_bnf *tmp) {
   return (EXIT_SUCCESS);
 }
 
-static tl_orexpr		*_read_or_expression(t_rdfl *obj);
-static void			_free_rule(tl_orexpr *exprs);
+// vvvvvvv up to this for parsing
+static
+tl_orexpr *
+_read_or_expression(t_rdfl *obj, e_rdflerrors *e) {
+  tl_orexpr	*expr;
+  tl_fact	*fact;
+
+  if (!(expr = malloc(sizeof(*expr))))
+    return (NULL);
+  expr->next = NULL;
+  if (!(expr->factors = _read_factor(obj, e))) {
+    free(expr);
+    return (NULL);
+  }
+  fact = expr->factors;
+  while ((fact->next = _read_factor(obj, e)) != NULL)
+    fact = fact->next;
+  return (expr);
+}
 
 static
 tl_orexpr *
-_read_orloop(t_rdfl *obj) {
+_read_orloop(t_rdfl *obj, e_rdflerrors *e) {
   tl_orexpr	*target, *loop;
 
-  if ((target = _read_or_expression(obj)) == NULL)
+  if ((target = _read_or_expression(obj, e)) == NULL)
     return (NULL);
   target->next = NULL;
   loop = target;
   while ((READ_OPE(obj, OP_OR, OPTS)) > 0) {
-    if ((loop->next = _read_or_expression(obj)) == NULL) {
+    if ((loop->next = _read_or_expression(obj, e)) == NULL) {
+      *e = ERRBNF_SYNTAX;
       _free_rule(target);
       return (NULL);
     }
@@ -92,12 +112,12 @@ _read_orloop(t_rdfl *obj) {
 
 static
 tl_orexpr *
-_read_couple(t_rdfl *obj, char *beg, char *end) {
+_read_couple(t_rdfl *obj, char *beg, char *end, e_rdflerrors *e) {
   tl_orexpr	*target;
 
   if (rdfl_bacc_readptr(obj, beg, strlen(beg), OPTS) <= 0)
     return (NULL);
-  if (!(target = _read_orloop(obj)))
+  if (!(target = _read_orloop(obj, e)))
     return (NULL);
   if (rdfl_bacc_readptr(obj, end, strlen(end), OPTS) <= 0) {
     _free_rule(target);
@@ -106,7 +126,6 @@ _read_couple(t_rdfl *obj, char *beg, char *end) {
   return (target);
 }
 
-// TODO rdfl_readBNF_builtins.c
 static
 ssize_t
 read_builtin_syntax(t_rdfl *obj, void **target) {
@@ -118,7 +137,7 @@ read_builtin_syntax(t_rdfl *obj, void **target) {
 }
 
 tl_fact *
-read_factor(t_rdfl *obj) {
+_read_factor(t_rdfl *obj, e_rdflerrors *e) {
   tl_fact	*fact;
 
   if (!(fact = malloc(sizeof(*fact))))
@@ -144,7 +163,7 @@ read_factor(t_rdfl *obj) {
     fact->type = FACT_LITERAL;
     return (fact);
   }
-  if ((fact->target = (void *)_read_couple(obj, OP_EXPR_BEG, OP_EXPR_END)) != NULL) {
+  if ((fact->target = (void *)_read_couple(obj, OP_EXPR_BEG, OP_EXPR_END, e)) != NULL) {
     int		opfeed = ((READ_OPE(obj, "+", OPTS) > 0) ? FACT_EXPR_NGT
 	: (READ_OPE(obj, "*", OPTS) > 0) ? FACT_EXPR_NGTE
 	: (READ_OPE(obj, "?", OPTS) > 0) ? FACT_EXPR_OPT
@@ -159,70 +178,80 @@ free_fact:
   return (NULL);
 }
 
+// vvv DONE
+//
 static
-tl_orexpr *
-_read_or_expression(t_rdfl *obj) {
-  tl_orexpr	*expr;
-  tl_fact	*fact;
+t_rdfl_bnf *
+read_production(t_rdfl *obj, e_rdflerrors *e) {
+  t_rdfl_bnf	*prod;
+  ssize_t	ret;
+  char		*cpy_identifier = NULL;
+  tl_param	*cpy_params = NULL;
+  tl_orexpr	*cpy_exprs = NULL;
 
-  if (!(expr = malloc(sizeof(*expr))))
-    return (NULL);
-  expr->next = NULL;
-  if (!(expr->factors = read_factor(obj))) {
-    free(expr);
-    return (NULL);
+  if ((ret = rdfl_ct_readIdentifier(obj, ((void *)&cpy_identifier), OPTS)) <= 0)
+    goto free_prod_customerr;
+  if (!(cpy_params = read_params(obj, e)) && (*e != ERR_NONE))
+    goto free_prod;
+  if ((ret = READ_OPE(obj, OP_RULE, OPTS)) <= 0)
+    goto free_prod_customerr;
+  if (!(cpy_exprs = _read_orloop(obj, e)) && *e != ERR_NONE)
+    goto free_prod;
+  if ((ret = READ_OPE(obj, OP_RULE_END, OPTS)) <= 0)
+    goto free_prod_customerr;
+  if (!(prod = malloc(sizeof(*prod)))) {
+    *e = ERR_MEMORY;
+    goto free_prod;
   }
-  fact = expr->factors;
-  while ((fact->next = read_factor(obj)) != NULL)
-    fact = fact->next;
-  return (expr);
+
+  prod->identifier = cpy_identifier;
+  prod->params = cpy_params;
+  prod->exprs = cpy_exprs;
+  prod->next = NULL;
+  return (prod);
+free_prod_customerr:
+  if (ret != ERR_NONE)
+    *e = ret;
+free_prod:
+  free(cpy_identifier);
+  _free_param_list(cpy_params);
+  _free_rule(cpy_exprs);
+  return (NULL);
 }
+
+// Logic:
+// if returns NULL, e IS set (ERR_NONE or ERR_*)
+// if returns not NULL, e == ERR_NONE
 
 static
 t_rdfl_bnf *
-read_production(t_rdfl *obj) {
-  t_rdfl_bnf	*prod;
-  e_rdflerrors	e = ERR_NONE;
+read_prodloop(t_rdfl *obj, e_rdflerrors *e) {
+  t_rdfl_bnf	*it, *productions;
 
-  if (!(prod = malloc(sizeof(*prod))))
+  if ((productions = read_production(obj, e)) == NULL)
     return (NULL);
-  prod->identifier = NULL;
-  if (rdfl_ct_readIdentifier(obj, ((void *)&prod->identifier), OPTS) <= 0
-      || !prod->identifier) {
-    goto free_prod;
+  it = productions;
+  while ((it->next = read_production(obj, e)) != NULL)
+    it = it->next;
+  if (*e != ERR_NONE || !rdfl_eofreached(obj)) {
+    rdfl_freeBNF(productions);
+    return (NULL);
   }
-  if ((!(prod->params = read_params(obj, &e))) && (e != ERR_NONE))
-    goto free_prod;
-  if (READ_OPE(obj, OP_RULE, OPTS) <= 0)
-    goto free_prod;
-  if (!(prod->exprs = _read_orloop(obj)))
-    goto free_prod;
-  if (READ_OPE(obj, OP_RULE_END, OPTS) <= 0)
-    goto free_prod;
-  prod->next = NULL;
-  return (prod);
-free_prod:
-  free(prod->identifier);
-  free(prod);
-  return (NULL);
+  return (productions);
 }
 
 t_rdfl_bnf *
 rdfl_readBNF(t_rdfl *obj) {
-  t_rdfl_bnf	*it, *productions;
+  t_rdfl_bnf	*productions;
+  e_rdflerrors	e = ERR_NONE;
 
   RDFL_OPT_SET(obj->settings, RDFL_AUTOCLEAR_BLANKS);
   if (rdfl_add_comment(obj, "##", "\n") != ERR_NONE
       || rdfl_add_comment(obj, "/*", "*/") != ERR_NONE)
     return (NULL);
-  if ((productions = read_production(obj)) == NULL) {
-    return (NULL);
-  }
-  it = productions;
-  while ((it->next = read_production(obj)) != NULL) {
-    it = it->next;
-  }
-  if (!rdfl_eofreached(obj)) {
+  if (!(productions = read_prodloop(obj, &e))) {
+    // Handle err
+    fprintf(stderr, "RET[%d]\n", e);
     return (NULL);
   }
   if (_link_factors(productions) == EXIT_FAILURE) {
@@ -231,6 +260,9 @@ rdfl_readBNF(t_rdfl *obj) {
   }
   return (productions);
 }
+
+//
+// TODO check *e ^^^^^^^^^^^^^
 
 static
 void

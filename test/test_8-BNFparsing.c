@@ -22,6 +22,7 @@ routine(const char *bnf_path, const char *bnf_applied) {
   rdfl_readBNF_dump(bnf);
   rdfl_freeBNF(bnf);
   rdfl_printbufferstate(&example);
+  example.data.consumer.skip = 0;
   rdfl_clean(&example);
   return (0);
 }

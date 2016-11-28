@@ -6,6 +6,7 @@ int
 test_6__buffer_access(void) {
   t_rdfl			example;
   size_t			i = 0;
+  ssize_t			ret;
   readsize_handler_t		rdfl_read;
   int				tab[] = {
      23, -20, 30 // first buff rollover
@@ -26,8 +27,8 @@ test_6__buffer_access(void) {
   }
   rdfl_printbufferstate(&example);
   printf("\n{result: %d}\n", rdfl_bacc_cmp(&example, "t:/bin/tcsh\nbin:x:1:1:bin:/bin", 15));
-  char	*str = rdfl_bacc_getcontent(&example, &i, 0, RDFL_P_NULLTERMINATED);
-  printf("%s\n", str);
+  char	*str = rdfl_bacc_getcontent(&example, &ret, 0, RDFL_P_NULLTERMINATED);
+  printf("[%zd]{%s\n}\n", ret, str);
   free(str);
   printf("%c\n", rdfl_bacc_ndx(&example, 2));
   rdfl_clean(&example);

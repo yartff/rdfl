@@ -28,9 +28,8 @@ _iterate_taildata_auto(t_rdfl *obj, int (*callback)(void *, size_t, void *), voi
   ssize_t	newdata_size;
 
   do {
-    if ((newdata_size = _iterate_readdata(obj)) <= 0) {
+    if ((newdata_size = _iterate_readdata(obj)) <= 0)
       return (rdfl_eofreached(obj) ? VCSM_REACHED_EOF : newdata_size);
-    }
   } while (callback(_rdfl_b_rewind_localptr(&obj->data, newdata_size), newdata_size, data) == BACC_CB_NEEDDATA);
   return (ERR_NONE);
 }
@@ -43,6 +42,7 @@ _iterate_autoskip(void *chunk, size_t s,
     int (*callback)(void *, size_t, void *), void *data,
     size_t *skipped, size_t skip) {
   size_t	to_skip = skip - *skipped;
+
   if (!to_skip) return (callback(chunk, s, data));
   if (s > to_skip) {
     *skipped += to_skip;
@@ -87,13 +87,16 @@ _iterate_chunk_routine(t_rdfl *obj, int (*callback)(void *, size_t, void *), voi
   }
   if (proceed == BACC_CB_NEEDDATA) {
 auto_it:
-    if (RDFL_OPT_ISSET(obj->settings, RDFL_AUTOREAD))
+    if (RDFL_OPT_ISSET(obj->settings, RDFL_AUTOREAD)) {
       return (_iterate_taildata_auto(obj, callback, data));
+    }
     return (rdfl_eofreached(obj) ? VCSM_REACHED_EOF : VCSM_INCOMPLETE_TOKEN);
     // TODO make sure this is handled in calling funcs
   }
   return (ERR_NONE);
 }
+// VCSM_INCOMPLETE_TOKEN means nothing in the stream discards the current routine, but
+// we can't reach EOF either
 
 // REACHED_EOF
 // INCOMPLETE
@@ -118,7 +121,9 @@ _handle_comment_loop(t_rdfl *obj, e_bacc_options opt, t_comments *l) {
   obj->data.consumer.skip += len;
   ret = rdfl_ct_readUntil(obj, NULL, l->end, strlen(l->end), opt | RDFL_P_IGNORE_PREDATA);
   obj->data.consumer.skip -= len;
-  if (ret <= 0)
+  if (ret == 0)
+    return (ERRBNF_SYNTAX);
+  if (ret < 0)
     return (ret);
   return (len + ret);
 }
@@ -134,7 +139,7 @@ _handle_comment(t_rdfl *obj, e_bacc_options opt) {
       return (ret);
     l = l->next;
   }
-  return (0);
+  return (ret);
 }
 
 static
@@ -153,8 +158,10 @@ _handle_clearable_data(t_rdfl *obj, e_bacc_options opt) {
     i = 0;
     while (i < (sizeof(ft) / sizeof(*ft))) {
       if ((ret = ft[i](obj, RDFL_OPT_CANCEL(opt, RDFL_P_CONSUME)
-	      | RDFL_P_IGNORE_PREDATA)) < 0)
+	      | RDFL_P_IGNORE_PREDATA)) < 0) {
+	obj->data.consumer.skip -= total;
 	return (ret);
+      }
       if (ret > 0) {
 	total += ret;
 	loop_ret = 1;
@@ -176,14 +183,13 @@ _handle_predata(t_rdfl *obj, e_bacc_options opt) {
 int
 _iterate_chunk(t_rdfl *obj, int (*callback)(void *, size_t, void *), void *data, e_bacc_options opt) {
   int		ret;
-  ssize_t	save;
+  ssize_t	save; // skip is incremented by save when predata handled
 
   if (RDFL_OPT_ISSET(opt, RDFL_P_IGNORE_PREDATA))
     return (_iterate_chunk_routine(obj, callback, data));
-  if ((save = _handle_predata(obj, opt)) < 0) {
+  if ((save = _handle_predata(obj, opt)) < 0)
     return (save);
-  }
-  // TODO consume_size(0); ??
+  // rdfl_force_consume_size(obj, save);
 #ifdef		DEVEL
   if (RDFL_OPT_ISSET(obj->settings, RDFL_CONTEXT)) {
 #endif
@@ -196,7 +202,9 @@ _iterate_chunk(t_rdfl *obj, int (*callback)(void *, size_t, void *), void *data,
     return (ERRDEV_BADFLAGS);
   }
 #endif
-  ret = _iterate_chunk_routine(obj, callback, data);
+  if (((ret = _iterate_chunk_routine(obj, callback, data)) == VCSM_INCOMPLETE_TOKEN)
+      && rdfl_eofreached(obj))
+    return (VCSM_REACHED_EOF);
   return (ret);
 }
 
@@ -208,9 +216,8 @@ _iterate_extract(t_rdfl *obj, void **extract, ssize_t s, e_bacc_options opt) {
     if (extract) *extract = NULL;
     return (ERR_NONE);
   }
-  if (extract)
-    if (!(*extract = rdfl_bacc_getcontent(obj, NULL, s, opt | RDFL_P_IGNORE_PREDATA)))
-      return (ERR_MEMORY);
+  if ((extract != NULL) && (!(*extract = rdfl_bacc_getcontent(obj, NULL, s, opt | RDFL_P_IGNORE_PREDATA))))
+    return (ERR_MEMORY);
   if (RDFL_OPT_ISSET(opt, RDFL_P_CONSUME))
     rdfl_b_consume_size(&obj->data, s);
   return (ERR_NONE);
