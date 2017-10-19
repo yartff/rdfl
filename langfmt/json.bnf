@@ -1,0 +1,61 @@
+/*
+** Object
+*/
+
+// this.n
+searchForKeyDoublons() {
+  number	i = 0;
+
+  while (i < this->count) {
+    number	j = i + 1;
+    chunk	pair = this[i];
+    while (j < this->count) {
+      if (pair[0] == this[j][0])
+	throw "Duplicate key within obj";
+      ++j;
+    }
+    ++i;
+  }
+}
+
+json_object	{
+  ['{'];
+  :list(json_pair, ','#go);
+  if (searchForKeyDoublons())
+    return (false);
+  ['}'];
+}
+
+json_pair	::= json_string ':' json_value;
+
+/*
+ ** Array
+ */
+json_array	::=
+  '[' :list(json_value, ','#go) ']'
+;
+
+/*
+ ** Value
+ */
+json_value	::= json_string | json_number | json_boolean | json_null | json_object | json_array;
+json_boolean	::= [ +*+ | "true" | "false"]#as(:id);
+json_null	::= "null"#as(:id);
+
+/*
+ ** String
+ */
+// possibility to -keepSpaces except nl
+json_string	 -keepSpaces ::=	'"' [ :skipTo(['"' | '\']) [ '\'#go json_string_escChar ] ] '"';
+// -keepSpaces from json_string: options inheritance?
+json_string_escChar ::= [ '"' | 'b' | 'n' | 'f' | '\' | '/' | 'r' | 't' | 'u' :hexDigit{4} ];
+
+/*
+ ** Number
+ */
+json_number	::= "-"? [ :digit(0) | json_19digit json_digit* ]
+[ "."#go json_digit* ]? [[ "e" | "E" ]#go [ "+" | "-" ]? json_digit+ ]
+;
+
+json_19digit	::= :digit(1, 9);
+json_digit	::= :digit;

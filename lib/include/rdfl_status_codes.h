@@ -69,7 +69,7 @@ typedef				enum {
   // will assume when a token matches a rule, not any other rules can be applied
   RDFL_P_CONSUME		= 1 << 1,
   RDFL_P_SETCONTEXT		= 1 << 2,
-  RDFL_P_IGNORE_PREDATA		= 1 << 3,
+  RDFL_P_IGNORE_PREDATASKIP	= 1 << 3,
   RDFL_P_LAST			= 1 << 4,
 }				e_bacc_options;
 

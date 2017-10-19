@@ -28,7 +28,7 @@ void			*rdfl_b_next_chunk(t_rdfl_buffer *, size_t *);
 tl_param		*read_params(t_rdfl *, e_rdflerrors *);
 
 // rdfl_bnf
-#define			READ_OPE(obj, c, opt)	(rdfl_bacc_readptr(obj, c, sizeof(c) - 1, opt) > 0)
+#define			READ_OPE(obj, c, opt)	(rdfl_bacc_cmp_needdata(obj, c, sizeof(c) - 1, opt) > 0)
 #define			OP_RULE			"::="
 #define			OP_RULE_END		";"
 #define			OP_OR			"|"

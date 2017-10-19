@@ -23,10 +23,10 @@ read_param_each(t_rdfl *obj, e_rdflerrors *e) {
   void		*data_type = NULL, *data_id;
   tl_param	*new = NULL;
 
-  if ((rdfl_ct_readIdentifier(obj, &data_type, OPTS) <= 0 || !data_type)
-      || (rdfl_ct_readIdentifier(obj, &data_id, OPTS) <= 0 || !data_id)) {
+  if ((rdfl_csm_readIdentifier(obj, &data_type, OPTS) <= 0 || !data_type)
+      || (rdfl_csm_readIdentifier(obj, &data_id, OPTS) <= 0 || !data_id)) {
     free(data_type);
-    if (data_type )// || value of rdfl_ct_readIdentifier > 0)
+    if (data_type )// || value of rdfl_csm_readIdentifier > 0)
     { *e = ERRBNF_SYNTAX; return (NULL); }
     return (NULL);
   }

@@ -23,18 +23,18 @@ typedef		enum {
   RDFL_PSTR_SIMPLE_QUOTE_STR		= RDFL_P_LAST << 5,
   RDFL_PSTR_EXTRACT_INNER		= RDFL_P_LAST << 6
 }		e_bacc_str;
-ssize_t		rdfl_ct_readString(t_rdfl *, void **extract, e_bacc_options);
+ssize_t		rdfl_csm_readString(t_rdfl *, void **extract, e_bacc_options);
 
 // probably need opt too
-ssize_t		rdfl_ct_readChar(t_rdfl *, void **extract, e_bacc_options);
-long		rdfl_ct_readInteger(t_rdfl *, void **extract, e_bacc_options);
+ssize_t		rdfl_csm_readChar(t_rdfl *, void **extract, e_bacc_options);
+long		rdfl_csm_readInteger(t_rdfl *, void **extract, e_bacc_options);
 typedef		enum {
   // standard C limits its identifiers to 31 characters.
   // data outside that boundary will be discarded
   RDFL_PIDT_C_LIMIT			= RDFL_P_LAST << 1
 }		e_bacc_idt;
-ssize_t		rdfl_ct_readIdentifier(t_rdfl *, void **extract, e_bacc_options);
-ssize_t		rdfl_ct_readUntil(t_rdfl *, void **, void *, size_t, e_bacc_options);
-ssize_t		rdfl_ct_readAllContained(t_rdfl *, void **, const char *, e_bacc_options);
+ssize_t		rdfl_csm_readIdentifier(t_rdfl *, void **extract, e_bacc_options);
+ssize_t		rdfl_csm_readUntil(t_rdfl *, void **, void *, size_t, e_bacc_options);
+ssize_t		rdfl_csm_readMatchAny(t_rdfl *, void **, const char *, e_bacc_options);
 
 #endif

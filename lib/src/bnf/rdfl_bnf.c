@@ -115,11 +115,11 @@ tl_orexpr *
 _read_couple(t_rdfl *obj, char *beg, char *end, e_rdflerrors *e) {
   tl_orexpr	*target;
 
-  if (rdfl_bacc_readptr(obj, beg, strlen(beg), OPTS) <= 0)
+  if (rdfl_bacc_cmp_needdata(obj, beg, strlen(beg), OPTS) <= 0)
     return (NULL);
   if (!(target = _read_orloop(obj, e)))
     return (NULL);
-  if (rdfl_bacc_readptr(obj, end, strlen(end), OPTS) <= 0) {
+  if (rdfl_bacc_cmp_needdata(obj, end, strlen(end), OPTS) <= 0) {
     _free_rule(target);
     return (NULL);
   }
@@ -131,7 +131,7 @@ ssize_t
 read_builtin_syntax(t_rdfl *obj, void **target) {
   ssize_t		ret;
   if ((ret = READ_OPE(obj, ":", OPTS)) <= 0) return (ret);
-  if ((ret = rdfl_ct_readIdentifier(obj, target, OPTS | RDFL_P_IGNORE_PREDATA)) <= 0)
+  if ((ret = rdfl_csm_readIdentifier(obj, target, OPTS | RDFL_P_IGNORE_PREDATASKIP)) <= 0)
     return ((!ret) ? ERRBNF_SYNTAX : ret);
   return (1);
 }
@@ -149,15 +149,15 @@ _read_factor(t_rdfl *obj, e_rdflerrors *e) {
     fact->type = FACT_RULE_BUILTIN;
     return (fact);
   }
-  if (rdfl_ct_readIdentifier(obj, &fact->target, OPTS) > 0) {
+  if (rdfl_csm_readIdentifier(obj, &fact->target, OPTS) > 0) {
     if (!fact->target)
       goto free_fact;
     fact->type = FACT_RULE;
     return (fact);
   }
   // TODO builtin readString(whatever the quote)
-  if (rdfl_ct_readString(obj, &fact->target, OPTS) > 0
-      || rdfl_ct_readString(obj, &fact->target, OPTS | RDFL_PSTR_SIMPLE_QUOTE_STR) > 0) {
+  if (rdfl_csm_readString(obj, &fact->target, OPTS) > 0
+      || rdfl_csm_readString(obj, &fact->target, OPTS | RDFL_PSTR_SIMPLE_QUOTE_STR) > 0) {
     if (!fact->target)
       goto free_fact;
     fact->type = FACT_LITERAL;
@@ -189,7 +189,7 @@ read_production(t_rdfl *obj, e_rdflerrors *e) {
   tl_param	*cpy_params = NULL;
   tl_orexpr	*cpy_exprs = NULL;
 
-  if ((ret = rdfl_ct_readIdentifier(obj, ((void *)&cpy_identifier), OPTS)) <= 0)
+  if ((ret = rdfl_csm_readIdentifier(obj, ((void *)&cpy_identifier), OPTS)) <= 0)
     goto free_prod_customerr;
   if (!(cpy_params = read_params(obj, e)) && (*e != ERR_NONE))
     goto free_prod;

@@ -1,5 +1,5 @@
 LIB_DIR		=	lib/
-TEST_DIR	=	test/
+TEST_DIR	=	unit_tests/
 
 lib:
 	@make -C $(LIB_DIR) --no-print-directory
