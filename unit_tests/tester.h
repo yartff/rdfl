@@ -4,6 +4,7 @@
 # include	"rdfl.h"
 # include	"rdfl_devel.h"
 
+# define	EXINPUT_FILES_PATH(x)	"./example_files/"x
 int		test_0__devel(void);
 int		test_1__allavailable_reader(void);
 int		test_2__inplace_reader(void);

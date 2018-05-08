@@ -17,7 +17,7 @@ test_6__buffer_access(void) {
   rdfl_set_buffsize(&example, 2);
   if (rdfl_load_path(&example, "/etc/passwd", RDFL_FORCEREADSIZE, NULL))
     return (EXIT_FAILURE);
-  rdfl_read = get_func(RDFL_FORCEREADSIZE);
+  rdfl_read = rdflDevel_get_func(RDFL_FORCEREADSIZE);
   while (i < (sizeof(tab) / sizeof(*tab))) {
     if (tab[i] < 0)
       rdfl_force_consume_size(&example, -(tab[i]));
@@ -25,7 +25,7 @@ test_6__buffer_access(void) {
       rdfl_read(&example, tab[i]);
     ++i;
   }
-  rdfl_printbufferstate(&example);
+  rdflDevel_printbufferstate(&example);
   printf("\n{result: %d}\n", rdfl_bacc_cmp(&example, "t:/bin/tcsh\nbin:x:1:1:bin:/bin", 15));
   char	*str = rdfl_bacc_getcontent(&example, &ret, 0, RDFL_P_NULLTERMINATED);
   printf("[%zd]{%s\n}\n", ret, str);

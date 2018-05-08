@@ -1,0 +1,9 @@
+foreach readFunc {
+  foreach optionsSet {
+    rdflDevel_get_func(optionsSet) == readFunc;
+    test_fetching;
+    test buffer_accuracy {
+	middle_word
+    }
+  }
+}

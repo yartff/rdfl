@@ -17,7 +17,7 @@ test_1__allavailable_reader(void) {
     printf("%d\n", err);
     return (EXIT_FAILURE);
   }
-  rdfl_read = get_func(RDFL_ALL_AVAILABLE);
+  rdfl_read = rdflDevel_get_func(RDFL_ALL_AVAILABLE);
   if ((s = rdfl_read(&example, NULL)) < 0) {
     rdfl_clean(&example);
     return (EXIT_FAILURE);

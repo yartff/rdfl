@@ -1,26 +1,31 @@
 NAME		=		librdfl_$(HOSTTYPE).so
 NOLN_NAME	=		librdfl.so
 
-SRCDIR		=		src/
-INCDIR		=		include/
+INCLUDES	=		include/
+INCLUDES_MAIN	=		$(SRC_MAIN)include/
+INCLUDES_BC	=		$(SRC_BC)include/
+INCLUDES_BNF	=		$(SRC_BNF)include/
 
 CMD_CC		=		gcc
 CMD_RM		=		@rm -rfv
 
-SRC_BNF		=		$(SRCDIR)bnf/
-SRC_BC		=		$(SRCDIR)buffcons/
+SRC_MAIN	=		rdfl/
+SRC_BNF		=		bnf/
+SRC_BC		=		buffer/
 SRC_BC_CONS	=		$(SRC_BC)consumers/
 SRC_BC_BACC	=		$(SRC_BC)accessors/
 
 SRC		=		\
-				$(SRCDIR)rdfl.c				\
-				$(SRCDIR)rdfl_network.c			\
-				$(SRCDIR)rdfl_devel.c			\
+				$(SRC_MAIN)rdfl.c			\
+				$(SRC_MAIN)data.c			\
+				$(SRC_MAIN)rdfl_network.c		\
+				$(SRC_MAIN)rdfl_extract.c		\
+				$(SRC_MAIN)rdfl_devel.c			\
 				\
-				$(SRC_BC)rdfl_buffer.c			\
+				$(SRC_BC)buffer.c			\
+				$(SRC_BC)read.c				\
 				$(SRC_BC)rdfl_buffer_access.c		\
 				$(SRC_BC)rdfl_buffer_iterate.c		\
-				$(SRC_BC)rdfl_context.c			\
 				\
 				$(SRC_BC_CONS)bnf_identifier.c		\
 				$(SRC_BC_CONS)bnf_string.c		\
@@ -35,12 +40,14 @@ SRC		=		\
 				$(SRC_BNF)rdfl_bnf_run.c		\
 				$(SRC_BNF)rdfl_bnf_dump.c
 
+#$(SRC_BC)rdfl_context.c		\
+
 OBJ		=		$(SRC:.c=.o)
 
 CFLAGS		+=		-Wall -Wextra
 CFLAGS		+=		-fPIC -std=gnu99
 CFLAGS		+=		-finline-functions
-CFLAGS		+=		-I$(INCDIR)
+CFLAGS		+=		-I$(INCLUDES) -I$(INCLUDES_MAIN) -I$(INCLUDES_BC) -I$(INCLUDES_BNF)
 CFLAGS		+=		-D_POSIX_C_SOURCE
 CFLAGS		+=		-D_POSIX_SOURCE
 CFLAGS		+=		-D_BSD_SOURCE

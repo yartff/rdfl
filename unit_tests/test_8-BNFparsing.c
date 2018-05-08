@@ -21,7 +21,7 @@ routine(const char *bnf_path, const char *bnf_applied) {
   bnf = rdfl_readBNF(&example);
   rdfl_readBNF_dump(bnf);
   rdfl_freeBNF(bnf);
-  rdfl_printbufferstate(&example);
+  rdflDevel_printbufferstate(&example);
   example.data.consumer.skip = 0;
   rdfl_clean(&example);
   return (0);
@@ -39,7 +39,7 @@ test_8__BNFparsing(void) {
     return (EXIT_FAILURE);
     */
   // fprintf(stdout, "\n[[%zd]]\n", rdfl_applyBNF(bnf, &feed, "redirection"));
-  // rdfl_printbufferstate(&feed);
+  // rdflDevel_printbufferstate(&feed);
   // rdfl_clean(&feed);
   //routine("example_files/test_8_bash.bnf", NULL);
   routine("example_files/test_8_ebnf.bnf", NULL);

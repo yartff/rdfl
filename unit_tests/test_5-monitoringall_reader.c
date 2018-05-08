@@ -10,8 +10,8 @@ test_5__monitoringall_reader(void) {
   rdfl_init(&example);
   rdfl_set_buffsize(&example, 500);
   rdfl_set_timeout(&example, 5000000);
-  rdfl_read = get_func(RDFL_MONITORING | RDFL_ALL_AVAILABLE);
-  fprintf(stderr, "%s\n", handler_typedef_declare(rdfl_read));
+  rdfl_read = rdflDevel_get_func(RDFL_MONITORING | RDFL_ALL_AVAILABLE);
+  fprintf(stderr, "%s\n", rdflDevel_handler_typedef_declare(rdfl_read));
   if (rdfl_load_connect(&example, "127.0.0.1", 8081, RDFL_MONITORING | RDFL_ALL_AVAILABLE, &err)) {
     printf("%d\n", err);
     return (EXIT_FAILURE);
@@ -19,7 +19,7 @@ test_5__monitoringall_reader(void) {
   ssize_t	i = 0;
   while ((i = rdfl_read(&example, NULL)) > 0) {
     printf("RET: %zi\n", i);
-    rdfl_printbufferstate(&example);
+    rdflDevel_printbufferstate(&example);
   }
   printf("RET: %zi\n", i);
   rdfl_clean(&example);

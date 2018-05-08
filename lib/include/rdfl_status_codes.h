@@ -1,6 +1,16 @@
 #ifndef			__RDFL_STATUSCODES_H_
 # define		__RDFL_STATUSCODES_H_
 
+# define		RDFL_OPT_CANCEL(value, opt)	(value & ~opt)
+# define		RDFL_OPT_CONTAINALL(value, opt)	((value & opt) == opt)
+# define		RDFL_OPT_ISSET(value, opt)	(value & opt)
+# define		RDFL_OPT_SET(value, opt)	(value |= opt)
+// TODO: Can't use this one with several opts.
+# define		RDFL_OPT_UNSET(value, opt)	\
+  do { \
+    if (RDFL_OPT_ISSET(value, opt)) value ^= opt; \
+  } while (0);
+
 typedef			enum {
   RDFL_NONE		= 0,
   RDFL_LEGACY		= 1 << 0,
@@ -28,8 +38,9 @@ typedef			enum {
 
 typedef			enum {
   ERR_NONE		= 0,
+  ERR_MISC		= -1,
   ERR_READ		= -2,
-  ERR_MEMORY		= -3,
+  ERR_MEMORY_ALLOC	= -3,
   ERR_BADF		= -4,
   ERR_NOSPACELEFT	= -5,
   ERR_SELECT		= -6,
@@ -48,7 +59,6 @@ typedef			enum {
   ERRDEV_SIZETOOBIG	= -34,
 # endif
 
-  ERR_MISC		= -99,
   VCSM			= -100,
   VCSM_INCOMPLETE_TOKEN	= -101,
   VCSM_UNMARKED_TOKEN	= -102,
@@ -63,6 +73,13 @@ typedef			enum {
   VAL_NEED_DATA		= -404
 }			e_rdflerrors;
 
+# ifdef			DEVEL
+#  define rdfl_retval	e_rdflerrors
+# else
+#  define rdfl_retval	void
+# endif
+
+// TODO: public or private?
 typedef				enum {
   RDFL_P_NONE			= 0,
   RDFL_P_NULLTERMINATED		= 1 << 0,

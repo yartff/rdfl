@@ -11,7 +11,7 @@ test_2__inplace_reader(void) {
 
   rdfl_init(&example);
   rdfl_set_buffsize(&example, 94);
-  rdfl_read = get_func(RDFL_NO_EXTEND);
+  rdfl_read = rdflDevel_get_func(RDFL_NO_EXTEND);
   if (rdfl_load_path(&example, "/etc/passwd", RDFL_NO_EXTEND, NULL))
     return (EXIT_FAILURE);
   //srand(time(NULL));

@@ -14,14 +14,14 @@ test_3__bufferelasticity_tester(void) {
   rdfl_set_buffsize(&example, 5);
   if (rdfl_load_path(&example, "../notes.txt", RDFL_FORCEREADSIZE | RDFL_FULLEMPTY, NULL))
     return (EXIT_FAILURE);
-  rdfl_printbufferstate(&example);
-  rdfl_read = get_func(RDFL_FORCEREADSIZE | RDFL_FULLEMPTY);
+  rdflDevel_printbufferstate(&example);
+  rdfl_read = rdflDevel_get_func(RDFL_FORCEREADSIZE | RDFL_FULLEMPTY);
   while (i < (sizeof(tab) / sizeof(*tab))) {
     if (tab[i] < 0)
       rdfl_force_consume_size(&example, -(tab[i]));
     else
       rdfl_read(&example, tab[i]);
-    rdfl_printbufferstate(&example);
+    rdflDevel_printbufferstate(&example);
     ++i;
   }
   rdfl_clean(&example);
