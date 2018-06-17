@@ -18,7 +18,8 @@ static struct {
   const char		*name;
   const char		*func;
   e_rdflsettings	flag;
-}	readersTable[] = {{},
+}	readersTable[] = {
+  {NULL, NULL, NULL, RDFL_NONE},
   // Order matters. Starts at 1
   {&rdflReader_size, "readsize_handler_t", "rdflReader_size", RDFL_FORCEREADSIZE},
   {&rdflReader_monitoring_no_extend, "readmonitoringnoext_handler_t", "rdflReader_monitoring_no_extend", RDFL_MONITORING | RDFL_NO_EXTEND},

@@ -53,7 +53,6 @@ int			rdfl_eofreached(t_rdfl *obj);
 // TODO: rdfl_inputuserdata(t_rdfl *obj, void *, size_t s);
 
 /*
-void			*rdfl_flush_buffers_alloc(t_rdfl *obj, ssize_t *count_value);
 void			*rdfl_getinplace_next_chunk(t_rdfl *, size_t *, size_t *);
 void			rdfl_force_consume_size(t_rdfl *obj, size_t s);
 */

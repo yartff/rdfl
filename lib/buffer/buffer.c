@@ -114,7 +114,7 @@ b_fullclean_if_empty(t_rdfl_buffer *b) {
 // if consumer.raw joins buffer.raw and buffer.ndx is on the end,
 // both consumer.ndx and buffer.ndx goes back to 0 << TODO to reconsider
 void
-rdfl_b_consume_size(t_rdfl_buffer *b, size_t value) {
+b_consume_size(t_rdfl_buffer *b, size_t value) {
   value += b->consumer.skip;
 
   if (value > b->consumer.total) {
@@ -140,54 +140,6 @@ rdfl_b_consume_size(t_rdfl_buffer *b, size_t value) {
       return ;
     }
   }
-}
-
-static
-ssize_t
-rdfl_b_consume_next_chunk(t_rdfl_buffer *b, void *ptr) {
-  size_t	s;
-  void		*copy;
-
-  copy = b_consumer_ptr(b, &s);
-  memcpy(ptr, copy, s);
-  rdfl_b_consume_size(b, s);
-  return (s);
-}
-
-void *
-rdfl_b_consume_all_alloc(t_rdfl_buffer *b, ssize_t *count_value) {
-  void		*ptr;
-  size_t	ndx = 0;
-
-  if (count_value) *count_value = b->consumer.total;
-  if (!b->consumer.total) return (NULL);
-  if (!(ptr = malloc(b->consumer.total))) {
-    if (count_value) *count_value = ERR_MEMORY_ALLOC;
-    return (NULL);
-  }
-  while (b->consumer.total) {
-    ndx += rdfl_b_consume_next_chunk(b, ptr + ndx);
-  }
-  return (ptr);
-}
-
-void *
-rdfl_b_consume_firstbuffer_alloc(t_rdfl_buffer *b, ssize_t *count_value) {
-  void		*ptr;
-  size_t	ndx = 0;
-  t_rdfl_b_list	*raw_tmp;
-
-  if (count_value) *count_value = b->consumer.l_total;
-  if (!b->consumer.l_total) return (NULL);
-  if (!(ptr = malloc(b->consumer.l_total))) {
-    if (count_value) *count_value = ERR_MEMORY_ALLOC;
-    return (NULL);
-  }
-  raw_tmp = b->consumer.raw;
-  while (b->consumer.raw == raw_tmp) {
-    ndx += rdfl_b_consume_next_chunk(b, ptr + ndx);
-  }
-  return (ptr);
 }
 
 /*

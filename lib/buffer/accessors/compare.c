@@ -4,13 +4,13 @@
 #include		"rdfl_buffer_access.h"
 #include		"rdfl_consumer.h"
 
-#define		PTYPE(p)	((struct s_bacc_cmp_data *)p)
-struct		s_bacc_cmp_data {
-  void		*ptr;
-  size_t	offset;
-  size_t	total;
-  int		return_value;
-  int		cbret;
+#define			PTYPE(p)	((struct s_bacc_cmp_data *)p)
+struct			s_bacc_cmp_data {
+  void			*ptr;
+  size_t		offset;
+  size_t		total;
+  int			return_value;
+  int			cbret;
 };
 
 static

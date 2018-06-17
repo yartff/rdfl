@@ -48,9 +48,9 @@ ssize_t			b_push_read(t_rdfl_buffer *, int , void *, size_t);
 int			b_set_skip(t_rdfl_buffer *, size_t);
 
 // Consumer
-void			rdfl_b_consume_size(t_rdfl_buffer *, size_t);
-void			*rdfl_b_consume_firstbuffer_alloc(t_rdfl_buffer *, ssize_t *);
-void			*rdfl_b_consume_all_alloc(t_rdfl_buffer *b, ssize_t *count_value);
+void			b_consume_size(t_rdfl_buffer *, size_t);
+void			*b_consume_firstbuffer_alloc(t_rdfl_buffer *, ssize_t *);
+void			*b_consume_all_alloc(t_rdfl_buffer *b, ssize_t *count_value);
 
 void			*b_consumer_ptr(t_rdfl_buffer *, size_t *);
 

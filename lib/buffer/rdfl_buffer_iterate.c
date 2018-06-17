@@ -228,6 +228,6 @@ _iterate_extract(t_rdfl *obj, void **extract, ssize_t s, e_bacc_options opt) {
   if ((extract != NULL) && (!(*extract = rdfl_bacc_getcontent(obj, NULL, s, opt | RDFL_P_IGNORE_PREDATASKIP))))
     return (ERR_MEMORY_ALLOC);
   if (RDFL_OPT_ISSET(opt, RDFL_P_CONSUME))
-    rdfl_b_consume_size(&obj->data, s);
+    b_consume_size(&obj->data, s);
   return (ERR_NONE);
 }

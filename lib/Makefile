@@ -15,27 +15,27 @@ SRC_BC		=		buffer/
 SRC_BC_CONS	=		$(SRC_BC)consumers/
 SRC_BC_BACC	=		$(SRC_BC)accessors/
 
-SRC		=		\
-				$(SRC_MAIN)rdfl.c			\
+SRC		=		$(SRC_MAIN)rdfl.c			\
 				$(SRC_MAIN)data.c			\
 				$(SRC_MAIN)rdfl_network.c		\
 				$(SRC_MAIN)rdfl_extract.c		\
-				$(SRC_MAIN)rdfl_devel.c			\
-				\
-				$(SRC_BC)buffer.c			\
+				$(SRC_MAIN)rdfl_devel.c
+
+SRC		+=		$(SRC_BC)buffer.c			\
+				$(SRC_BC)consume.c			\
 				$(SRC_BC)read.c				\
 				$(SRC_BC)rdfl_buffer_access.c		\
-				$(SRC_BC)rdfl_buffer_iterate.c		\
-				\
-				$(SRC_BC_CONS)bnf_identifier.c		\
+				$(SRC_BC)rdfl_buffer_iterate.c
+
+SRC		+=		$(SRC_BC_CONS)bnf_identifier.c		\
 				$(SRC_BC_CONS)bnf_string.c		\
 				$(SRC_BC_CONS)match_any.c		\
-				$(SRC_BC_CONS)read_until.c		\
-				\
-				$(SRC_BC_BACC)compare.c			\
-				$(SRC_BC_BACC)get_content.c		\
-				\
-				$(SRC_BNF)rdfl_bnf.c			\
+				$(SRC_BC_CONS)read_until.c
+
+SRC		+=		$(SRC_BC_BACC)compare.c			\
+				$(SRC_BC_BACC)get_content.c
+
+SRC		+=		$(SRC_BNF)rdfl_bnf.c			\
 				$(SRC_BNF)rdfl_bnf_params.c		\
 				$(SRC_BNF)rdfl_bnf_run.c		\
 				$(SRC_BNF)rdfl_bnf_dump.c

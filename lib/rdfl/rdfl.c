@@ -40,7 +40,7 @@ rdfl_read_ignore_size(t_rdfl *obj, size_t s) {
 inline
 void
 rdfl_force_consume_size(t_rdfl *obj, size_t s) {
-  rdfl_b_consume_size(&obj->data, s);
+  b_consume_size(&obj->data, s);
   if (RDFL_OPT_ISSET(obj->settings, RDFL_FULLEMPTY))
     b_fullclean_if_empty(&obj->data);
 }
@@ -115,7 +115,7 @@ rdflReader_noextend(t_rdfl *obj, size_t consume) {
   ssize_t	total;
   void		*ptr;
 
-  rdfl_b_consume_size(&obj->data, consume);
+  b_consume_size(&obj->data, consume);
   ptr = b_buffer_getchunk(&obj->data, &s);
   if (!s) { return (ERR_NOSPACELEFT); }
   if ((total = push_read(obj, ptr, s)) < 0)
