@@ -1,8 +1,6 @@
 #include		<string.h>
+#include		"buffer.h"
 #include		"iterate.h"
-#include		"values.h"
-#include		"rdfl_buffer_access.h"
-#include		"rdfl_consumer.h"
 
 #define			PTYPE(p)	((struct s_bacc_cmp_data *)p)
 struct			s_bacc_cmp_data {

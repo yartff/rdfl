@@ -3,14 +3,13 @@
 #else
 # define	_XOPEN_SOURCE	500
 #endif		/* !__STDC_VERSION__ */
-#include	<time.h>
 
+#include	<sys/select.h>
 #include	<netdb.h>
 #include	<arpa/inet.h>
 #include	<stdlib.h>
 #include	<unistd.h>
 #include	<string.h>
-#include	"values.h"
 #include	"network.h"
 
 void

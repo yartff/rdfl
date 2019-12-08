@@ -1,20 +1,35 @@
 #include	<string.h>
 #include	<stdlib.h>
-#include	"rdfl_buffer.h"
-#include	"values.h"
+#include	"buffer.h"
 // #include	"context.h"
-#include	"rdfl_devel.h"
 
-// Calculations
+static int add_buffer(t_rdfl_buffer *b, size_t amount);
+
+// Chunk Getters
 //
-inline void	*b_consumer_ptr(t_rdfl_buffer *b, size_t *s) {
+void *
+b_buffer_ptr_extend(t_rdfl_buffer *b, size_t *s, size_t amount) {
+  void		*ptr = b_buffer_ptr(b, s);
+
+  if (!(*s)) {
+    if (add_buffer(b, amount) == EXIT_FAILURE) {
+      *s = 0;
+      return (NULL);
+    }
+    ptr = b_buffer_ptr(b, s);
+  }
+  return (ptr);
+}
+
+void	*b_consumer_ptr(t_rdfl_buffer *b, size_t *s) {
   if (!b->consumer.raw) { *s = 0; return (NULL); }
   *s = (((b->consumer.ndx + b->consumer.l_total) > b->consumer.raw->size)
       ? (b->consumer.raw->size - b->consumer.ndx)
       : (b->consumer.l_total));
   return (b->consumer.raw->data + b->consumer.ndx);
 }
-inline static void	*get_buffer_ptr(t_rdfl_buffer *b, size_t *s) {
+
+void	*b_buffer_ptr(t_rdfl_buffer *b, size_t *s) {
   if (!b->buffer.raw) { *s = 0; return (NULL); }
   *s = (b->consumer.raw->next || (b->consumer.ndx < b->buffer.ndx) || b->consumer.l_total == 0)
     ? (b->buffer.raw->size - b->buffer.ndx)
@@ -22,139 +37,12 @@ inline static void	*get_buffer_ptr(t_rdfl_buffer *b, size_t *s) {
   return (b->buffer.raw->data + b->buffer.ndx);
 }
 
-// Destructors
-//
-static
-void
-rdfl_b_del(t_rdfl_buffer *b) {
-  t_rdfl_b_list	*freed = b->consumer.raw;
-  b->consumer.raw = b->consumer.raw->next;
-  if (b->consumer.raw == NULL)
-    b->buffer.raw = NULL;
-  free(freed->data);
-  free(freed);
-}
-
-static
-void
-rdfl_b_del_restat(t_rdfl_buffer *b) {
-  b->consumer.total -= b->consumer.l_total;
-  rdfl_b_del(b);
-  b->consumer.ndx = 0;
-  if (b->consumer.raw) {
-    if (b->consumer.raw->next)
-      b->consumer.l_total = b->consumer.raw->size;
-    else {
-      b->consumer.l_total = b->buffer.ndx;
-      if (b->buffer.ndx == b->buffer.raw->size)
-	b->buffer.ndx = 0;
-    }
-  } else {
-    b->consumer.l_total = 0;
-    b->buffer.ndx = 0;
-  }
-}
-
-static
-void
-rdfl_b_del_restat_butfirst(t_rdfl_buffer *b) {
-  if (b->consumer.raw->next) {
-    rdfl_b_del_restat(b);
-    return ;
-  }
-  b->consumer.ndx = 0;
-  b->consumer.total = 0;
-  b->consumer.l_total = 0;
-  b->buffer.ndx = 0;
-}
-
-#if 0 // UNUSED ATM
-// Assumes there's one unique raw with data ranged from 0 to buffer.ndx
-inline static void rdfl_b_sraw_restat(t_rdfl_buffer *b) {
-  b->consumer.l_total = b->buffer.ndx;
-  b->consumer.total = b->buffer.ndx;
-  b->consumer.ndx = 0;
-}
-
-static
-void
-rdfl_b_clean_to_last_buffer(t_rdfl_buffer *b) {
-  if (!b->consumer.raw || !b->consumer.raw->next)
-    return ;
-  while (b->consumer.raw->next)
-    rdfl_b_del(b);
-  rdfl_b_sraw_restat(b);
-}
-#endif
-
-rdfl_retval
-b_clean(t_rdfl_buffer *b) {
-#ifdef		DEVEL
-  if (!b) return (ERRDEV_NULLOBJECT);
-#endif
-// TODO: ctx
-#if 0
-  rdfl_dropallcontexts(b);
-  free(b->consumer.ctx);
-#endif
-  while (b->consumer.raw)
-    rdfl_b_del(b);
-  b_init(b, 0);
-#ifdef		DEVEL
-  return (ERR_NONE);
-#endif
-}
-
-void
-b_fullclean_if_empty(t_rdfl_buffer *b) {
-  if (!(b->consumer.total))
-    (void)b_clean(b);
-}
-
-// if consumer.raw joins buffer.raw and buffer.ndx is on the end,
-// both consumer.ndx and buffer.ndx goes back to 0 << TODO to reconsider
-void
-b_consume_size(t_rdfl_buffer *b, size_t value) {
-  value += b->consumer.skip;
-
-  if (value > b->consumer.total) {
-    value = b->consumer.total;
-  }
-  // TODO: ctx
-#if 0
-  rdfl_context_consume(b, value);
-  rdfl_dropallcontexts(b);
-#endif
-  while (value) {
-    if (value >= b->consumer.l_total) {
-      value -= b->consumer.l_total;
-      b->consumer.skip = ((b->consumer.skip >= b->consumer.l_total)
-	  ? b->consumer.skip - b->consumer.l_total : 0);
-      rdfl_b_del_restat_butfirst(b);
-    }
-    else {
-      b->consumer.l_total -= value;
-      b->consumer.total -= value;
-      b->consumer.skip = 0;
-      b->consumer.ndx = (b->consumer.ndx + value) % b->consumer.raw->size;
-      return ;
-    }
-  }
-}
-
-/*
- **
- **
- ** REWRITE
- **
- */
-
 // Constructors
 //
 static
 int
 add_buffer_first(t_rdfl_buffer *b, size_t amount) {
-  register t_rdfl_b_list	*tmp;
+  register t_rdfl_blist	*tmp;
 
   if (!(tmp = malloc(sizeof(*(b->buffer.raw)))))
     return (EXIT_FAILURE);
@@ -212,34 +100,72 @@ b_init(t_rdfl_buffer *b, size_t amount) {
   return (EXIT_SUCCESS);
 }
 
+// Destructors
 //
-inline
-void *
-b_buffer_getchunk_extend(t_rdfl_buffer *b, size_t *s, size_t amount) {
-  void		*ptr = get_buffer_ptr(b, s);
+static
+void
+delete_consumer_blist(t_rdfl_buffer *b) {
+  t_rdfl_blist	*freed = b->consumer.raw;
+  b->consumer.raw = b->consumer.raw->next;
+  if (b->consumer.raw == NULL)
+    b->buffer.raw = NULL;
+  free(freed->data);
+  free(freed);
+}
 
-  if (!(*s)) {
-    if (add_buffer(b, amount) == EXIT_FAILURE) {
-      *s = 0;
-      return (NULL);
+static
+void
+delete_consumer_blist_restat(t_rdfl_buffer *b) {
+  b->consumer.total -= b->consumer.l_total;
+  delete_consumer_blist(b);
+  b->consumer.ndx = 0;
+  if (b->consumer.raw) {
+    if (b->consumer.raw->next)
+      b->consumer.l_total = b->consumer.raw->size;
+    else {
+      b->consumer.l_total = b->buffer.ndx;
+      if (b->buffer.ndx == b->buffer.raw->size)
+	b->buffer.ndx = 0;
     }
-    ptr = get_buffer_ptr(b, s);
+  } else {
+    b->consumer.l_total = 0;
+    b->buffer.ndx = 0;
   }
-  return (ptr);
+}
+
+void
+leave_unique_consumer_blist(t_rdfl_buffer *b) {
+  if (b->consumer.raw->next) {
+    delete_consumer_blist_restat(b);
+    return ;
+  }
+  b->consumer.ndx = 0;
+  b->consumer.total = 0;
+  b->consumer.l_total = 0;
+  b->buffer.ndx = 0;
 }
 
 inline
-void *
-b_buffer_getchunk(t_rdfl_buffer *b, size_t *s) {
-  return (get_buffer_ptr(b, s));
+void
+b_fullclean_if_empty(t_rdfl_buffer *b) {
+  if (!(b->consumer.total))
+    (void)b_clean(b);
 }
 
-int
-b_set_skip(t_rdfl_buffer *b, size_t value) {
+rdfl_retval
+b_clean(t_rdfl_buffer *b) {
 #ifdef		DEVEL
-  if (value >= b->consumer.total)
-    return (ERRDEV_OUTOFBOUND);
+  if (!b) return (ERRDEV_NULLOBJECT);
 #endif
-  b->consumer.skip = value;
+// TODO: ctx
+#if 0
+  rdfl_dropallcontexts(b);
+  free(b->consumer.ctx);
+#endif
+  while (b->consumer.raw)
+    delete_consumer_blist(b);
+  memset(b, 0, sizeof(*b));
+#ifdef		DEVEL
   return (ERR_NONE);
+#endif
 }

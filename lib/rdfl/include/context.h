@@ -1,5 +1,5 @@
-#ifndef			__RDFL_CONTEXT_H_
-# define		__RDFL_CONTEXT_H_
+#ifndef			__CONTEXT_H_
+# define		__CONTEXT_H_
 
 # include		"rdfl.h"
 

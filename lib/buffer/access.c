@@ -1,9 +1,6 @@
-#include		<string.h>
 #include		<stdlib.h>
-#include		"values.h"
-#include		"rdfl_buffer_access.h"
+#include		"buffer.h"
 #include		"iterate.h"
-#include		"rdfl_consumer.h"
 
 // TODO method with extract?
 size_t

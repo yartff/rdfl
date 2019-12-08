@@ -1,15 +1,14 @@
 #include		<string.h>
-#include		"iterate.h"
-#include		"rdfl_buffer_access.h"
+#include		"buffer.h"
+#include		"rdfl.h"
 #include		"rdfl_consumer.h"
-/* TODO: ctx
-#include		"context.h"
-*/
+#include		"buffer_access.h"
+// #include		"context.h"
 
 static
 ssize_t
 _iterate_readdata(t_rdfl *obj) {
-  if (RDFL_OPT_ISSET(obj->settings, RDFL_NO_EXTEND))
+  if (RDFL_OPT_ISSET(obj->settings, RDFL_NOEXTEND))
     return (rdflReader_noextend(obj, 0));
   return (rdflReader_singlestep(obj));
 }
@@ -20,7 +19,7 @@ void *
 _b_rewind_localptr(t_rdfl_buffer *buffobj, size_t count) {
   // fprintf(stderr, "%zu - %zu\n", buffobj->buffer.ndx, count);
   return (buffobj->buffer.raw->data + ((buffobj->buffer.ndx == 0) ? buffobj->buffer.raw->size :
-       buffobj->buffer.ndx) - count);
+	buffobj->buffer.ndx) - count);
 }
 
 static
@@ -58,7 +57,7 @@ _iterate_autoskip(void *chunk, size_t s,
 static
 int
 _iterate_chunk_routine(t_rdfl *obj, int (*callback)(void *, size_t, void *), void *data) {
-  t_rdfl_b_list	*it;
+  t_rdfl_blist	*it;
   void		*ptr;
   int		proceed;
   size_t	chunk_data_size, skipped = 0, total_skip;
@@ -182,7 +181,6 @@ _handle_predata(t_rdfl *obj, e_bacc_options opt) {
   return (_handle_clearable_data(obj, opt));
 }
 
-// TODO: callback[0] and callback[n] for all _cb funcs
 int
 _iterate_chunk(t_rdfl *obj, int (*callback)(void *, size_t, void *), void *data, e_bacc_options opt) {
   int		ret;
@@ -216,7 +214,7 @@ _iterate_chunk(t_rdfl *obj, int (*callback)(void *, size_t, void *), void *data,
   return (ret);
 }
 
-// HAS TO be called everytime after _iterate_chunk
+// HAS TO be called everytime after _iterate_chunk()
 // you can do things in between
 // if you send NULL as extract, it can't fail
 int

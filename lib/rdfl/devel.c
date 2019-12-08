@@ -1,15 +1,9 @@
+#include	"rdfl_devel.h"
+
 #ifdef		DEVEL
 
-# include	<unistd.h>
-# include	<limits.h>
-# include	<stdio.h>
-# include	<string.h>
-# include	<stdlib.h>
-# include	"values.h"
-// # include	"context.h"
-# include	"rdfl_devel.h"
-
-// RDFL
+# define	RDFL_IS_ASCII_PRINTABLECHAR(c) ((c) >= ' ' && (c) <= '~')
+# define	RDFL_IS_ASCII_NODISPLAYCHAR(c) (((c) == '\n') || ((c) == '\t'))
 
 // Helpers
 //
@@ -22,11 +16,11 @@ static struct {
   {NULL, NULL, NULL, RDFL_NONE},
   // Order matters. Starts at 1
   {&rdflReader_size, "readsize_handler_t", "rdflReader_size", RDFL_FORCEREADSIZE},
-  {&rdflReader_monitoring_no_extend, "readmonitoringnoext_handler_t", "rdflReader_monitoring_no_extend", RDFL_MONITORING | RDFL_NO_EXTEND},
+  {&rdflReader_monitoring_noextend, "readmonitoringnoext_handler_t", "rdflReader_monitoring_noextend", RDFL_MONITORING | RDFL_NOEXTEND},
   {&rdflReader_monitoring_allavail, "readmonitoringall_handler_t", "rdflReader_monitoring_allavail", RDFL_MONITORING | RDFL_ALL_AVAILABLE},
   {&rdflReader_monitoring, "readmonitoring_handler_t", "rdflReader_monitoring", RDFL_MONITORING},
-  {&rdflReader_noextend, "readnoextend_handler_t", "rdflReader_noextend", RDFL_NO_EXTEND},
-  {&rdflReader_all_available, "readall_handler_t", "rdflReader_all_available", RDFL_ALL_AVAILABLE},
+  {&rdflReader_noextend, "readnoextend_handler_t", "rdflReader_noextend", RDFL_NOEXTEND},
+  {&rdflReader_allavail, "readall_handler_t", "rdflReader_allavail", RDFL_ALL_AVAILABLE},
   {&rdflReader_legacy, "readlegacy_handler_t", "rdflReader_legacy", RDFL_LEGACY},
   {&rdflReader_singlestep, "readsinglestep_t", "rdflReader_singlestep", RDFL_NONE},
 };
@@ -114,7 +108,7 @@ print_contexts(t_rdfl_buffer *b) {
 static
 void
 print_buffers(t_rdfl_buffer *b) {
-  t_rdfl_b_list		*raw = b->consumer.raw;
+  t_rdfl_blist		*raw = b->consumer.raw;
   //t_ctxstack		*l;
   size_t		tmp;
 
@@ -177,3 +171,38 @@ rdflDevel_printbufferstate(t_rdfl *obj) {
 }
 
 #endif
+
+e_buildMode
+rdflBuild_getMode(void) {
+
+  // DEVEL
+#ifdef		DEVEL
+  // printf("rdflBuild_getMode ::%s\n", "DEVEL");
+# define	LC_DEVEL_MODE MODE_DEVEL
+#else
+# define	LC_DEVEL_MODE	0
+#endif
+
+  // DEBUG
+#ifdef		DEBUG
+  // printf("rdflBuild_getMode ::%s\n", "DEBUG");
+# define	LC_DEBUG_MODE MODE_DEBUG
+#else
+# define	LC_DEBUG_MODE	0
+#endif
+
+  // OPTI
+#ifdef		OPTI
+  // printf("rdflBuild_getMode ::%s\n", "OPTI");
+# define	LC_OPTI_MODE MODE_OPTI
+#else
+# define	LC_OPTI_MODE	0
+#endif
+
+  const e_buildMode	mode = LC_DEVEL_MODE | LC_DEBUG_MODE | LC_OPTI_MODE;
+
+#undef		LC_DEVEL_MODE
+#undef		LC_DEBUG_MODE
+#undef		LC_OPTI_MODE
+  return (mode);
+}

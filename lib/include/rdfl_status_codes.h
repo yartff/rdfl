@@ -5,6 +5,7 @@
 # define		RDFL_OPT_CONTAINALL(value, opt)	((value & opt) == opt)
 # define		RDFL_OPT_ISSET(value, opt)	(value & opt)
 # define		RDFL_OPT_SET(value, opt)	(value |= opt)
+
 // TODO: Can't use this one with several opts.
 # define		RDFL_OPT_UNSET(value, opt)	\
   do { \
@@ -17,7 +18,7 @@ typedef			enum {
   RDFL_FORCEREADSIZE	= 1 << 1,
   RDFL_ALL_AVAILABLE	= 1 << 2,
   RDFL_MONITORING	= 1 << 3,
-  RDFL_NO_EXTEND	= 1 << 4,
+  RDFL_NOEXTEND		= 1 << 4,
   RDFL_ADJUST_BUFFSIZE	= 1 << 5,
   RDFL_FILLFREESPACE	= 1 << 6,
   RDFL_THREADSAFE	= 1 << 7,
@@ -35,6 +36,13 @@ typedef			enum {
   // RDFL_CONSUMER_THREAD	= (RDFL_NONE + 1) << 1,
   RDFL_LAST		= 1 << 17,
 }			e_rdflsettings;
+
+typedef			enum {
+  LOCAL_NONE		=	RDFL_LAST,
+  LOCAL_OPEN		=	LOCAL_NONE << 1,
+  LOCAL_ALLOC		=	LOCAL_NONE << 2,
+  LOCAL_REACHED_EOF	=	LOCAL_NONE << 3,
+}			e_rdflsettings_local;
 
 typedef			enum {
   ERR_NONE		= 0,
@@ -72,12 +80,6 @@ typedef			enum {
   // If you get this value, pls fill in buffer manually and try again
   VAL_NEED_DATA		= -404
 }			e_rdflerrors;
-
-# ifdef			DEVEL
-#  define rdfl_retval	e_rdflerrors
-# else
-#  define rdfl_retval	void
-# endif
 
 // TODO: public or private?
 typedef				enum {

@@ -1,5 +1,7 @@
+#include	<unistd.h>
 #include	"values.h"
-#include	"buffer_read.h"
+#include	"buffer.h"
+#include	"clean.h"
 
 #ifdef DEVEL
 # include	<limits.h>
@@ -16,6 +18,7 @@ addsize(t_rdfl_buffer *b, size_t value) {
     b->buffer.ndx = 0;
 }
 
+static
 ssize_t
 b_push_read(t_rdfl_buffer *b, int fd, void *ptr, size_t s) {
   ssize_t	nb;
@@ -50,7 +53,7 @@ read_into_chunk_extend(void *obj) {
   void		*ptr;
   size_t	s;
 
-  if (!(ptr = b_buffer_getchunk_extend(&((t_rdfl *)obj)->data, &s,
+  if (!(ptr = b_buffer_ptr_extend(&((t_rdfl *)obj)->data, &s,
 	  ((t_rdfl *)obj)->v.buffsize)))
     return (ERR_MEMORY_ALLOC);
   return (push_read(obj, ptr, s));
@@ -61,9 +64,8 @@ read_into_chunk(void *obj) {
   void		*ptr;
   size_t	s;
 
-  ptr = b_buffer_getchunk(&((t_rdfl *)obj)->data, &s);
+  ptr = b_buffer_ptr(&((t_rdfl *)obj)->data, &s);
   if (!s)
     return (ERR_NOSPACELEFT);
   return (push_read(obj, ptr, s));
 }
-
