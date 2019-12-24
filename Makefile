@@ -86,7 +86,8 @@ re:			fclean all
 
 ## unit_tests Makefile
 UNIT_DIR	=	unit_tests/
-UNIT_TESTS_DIR	=	$(UNIT_DIR)d.testers/
+UNIT_TESTS_DIR	=	$(UNIT_DIR)testers.d/
+UNIT_TREE	=	$(UNIT_TESTS_DIR)tree/
 UNIT_NAME	=	unit
 
 UNIT_OBJ	=	$(UNIT_SRC:.c=.o)
@@ -95,19 +96,19 @@ UNIT_SRC	=	$(UNIT_DIR)unit.c			\
 			$(UNIT_DIR)unit_devel.c			\
 			$(UNIT_DIR)opt.c			\
 			$(UNIT_DIR)lib.c			\
-			$(UNIT_TESTS_DIR)public.c
-			# $(UNIT_DIR)file.c
+			$(UNIT_TESTS_DIR)public.c		\
+			$(UNIT_TESTS_DIR)file.c#			\
+			\
+			$(UNIT_TREE)buffer/buffer.d/b_buffer_ptr_extend.c
 
-INCLUDE_UNIT	=	$(UNIT_DIR)include/
-
-RDFL_LD_FLAGS	=	-L. -lrdfl
+INCLUDES_UFLAGS	=	-I$(UNIT_DIR)include/ -I$(UNIT_TREE) -I$(LIB_DIR)
 
 UNIT_LD_FLAGS	=	-ldl
 
 $(UNIT_NAME):		CFLAGS	=	-g3
 $(UNIT_NAME):		CFLAGS	=	-DDEVEL
 $(UNIT_NAME):		CFLAGS	+=	$(INCLUDES_FLAGS)
-$(UNIT_NAME):		CFLAGS	+=	-I$(INCLUDE_UNIT)
+$(UNIT_NAME):		CFLAGS	+=	$(INCLUDES_UFLAGS)
 $(UNIT_NAME):		CFLAGS	+=	-D_GNU_SOURCE
 $(UNIT_NAME):		$(UNIT_OBJ)
 	echo Linking: $(CMD_CC) '{}' -o $(UNIT_NAME) $(UNIT_LD_FLAGS)

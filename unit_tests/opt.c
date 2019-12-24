@@ -19,7 +19,7 @@ t_opt		opts[] = {
   {'a', NULL, "Tests all files.", 0, DEF_RT_VAL},
   // {'e', NULL, "Only output errors.", 0, DEF_RT_VAL},
   {'m', "debug|devel|both [" OPT_M_ADD_OPTI "]", "Execute tests with compile type presets."
-    "Append '" OPT_M_ADD_OPTI "' for optimisation mode", 0, DEF_RT_VAL},
+    " Append '" OPT_M_ADD_OPTI "' for optimisation mode", 0, DEF_RT_VAL},
 };
 
 static void
@@ -186,12 +186,12 @@ print_opt(void) {
     ++i;
   }
   */
-     unsigned int i = optind;
-     fprintf(stdout, "===\n");
-     while (i < g_opt.g_argc) {
-     fprintf(stdout, "-> %s\n", g_opt.g_argv[i]);
-     ++i;
-     }
+  unsigned int i = optind;
+  fprintf(stdout, "===\n");
+  while (i < g_opt.g_argc) {
+    fprintf(stdout, "-> %s\n", g_opt.g_argv[i]);
+    ++i;
+  }
 }
 
 /*
@@ -204,10 +204,19 @@ opt_isset(char opt) {
   return (rt ? rt->on : 0);
 }
 
-char *
-opt_arg(char opt) {
-  t_runtime	*rt = get_rt(opt);
-  return (rt ? rt->arg : NULL);
+const char	**
+opt_arg(char opt, unsigned int *len) {
+  t_opt		*obj = get_opt(opt);
+  if (!obj || !obj->rt.on) {
+    if (len) *len = 0;
+    return (NULL);
+  }
+  if (obj->cumulative) {
+    if (len) *len = obj->rt.len;
+    return (const char **)obj->rt.arg;
+  }
+  if (len) *len = 1;
+  return (((const char **)&obj->rt.arg));
 }
 
 const char **

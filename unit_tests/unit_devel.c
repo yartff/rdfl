@@ -10,23 +10,24 @@
  * -1: opt error
  * other: recompile in this mode
 */
+
 int
 check_buildMode() {
   rdflBuild_getMode_t f_getMode = load_rdfl_function("rdflBuild_getMode", 1);
   e_buildMode libmode = f_getMode(), optmode = 0;
-  char *opt = opt_arg('m');
+  const char	**opt = opt_arg('m', NULL);
   if (!opt) return 0;
-  if (!strncmp(opt, OPT_M_DEB, (sizeof(OPT_M_DEB) - 1))) {
+  if (!strncmp(*opt, OPT_M_DEB, (sizeof(OPT_M_DEB) - 1))) {
     optmode |= MODE_DEBUG;
-  } else if (!strncmp(opt, OPT_M_DEV, (sizeof(OPT_M_DEV) - 1))) {
+  } else if (!strncmp(*opt, OPT_M_DEV, (sizeof(OPT_M_DEV) - 1))) {
     optmode |= MODE_DEVEL;
-  } else if (!strncmp(opt, OPT_M_BOTH, (sizeof(OPT_M_BOTH) - 1))) {
+  } else if (!strncmp(*opt, OPT_M_BOTH, (sizeof(OPT_M_BOTH) - 1))) {
     optmode |= MODE_DEBUG | MODE_DEVEL;
   } else {
     return (-1);
   }
 
-  if (!strcmp(opt + strlen(opt) - (sizeof(OPT_M_ADD_OPTI) - 1), OPT_M_ADD_OPTI))
+  if (!strcmp((*opt) + strlen(*opt) - (sizeof(OPT_M_ADD_OPTI) - 1), OPT_M_ADD_OPTI))
     optmode |= MODE_OPTI;
   if (libmode == optmode)
     return (0);

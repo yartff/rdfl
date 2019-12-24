@@ -4,7 +4,27 @@
 #include	"unit_devel.h"
 #include	"lib.h"
 #include	"opt.h"
+#include	"file.h"
 #include	"public.h"
+
+void
+execute_files(void) {
+  const char **files = opt_args();
+  for (unsigned int i = 0; files[i]; ++i) {
+    exec_file(files[i]);
+  }
+}
+
+void
+execute_categories(void) {
+  unsigned int len;
+  const char **c = opt_arg('c', &len);
+  if (!c) return ;
+  for (unsigned int i = 0; i < len; ++i) {
+    // fprintf(stderr, "  %s\n", c[i]);
+    // exec_cat(c[i]);
+  }
+}
 
 void
 execute_tests(const char **files) {
@@ -39,12 +59,14 @@ main(int argc, char **argv) {
     opt_helpopt('m');
     return (EXIT_FAILURE);
   }
-  print_opt();
   if (build_ret && recompile_rdfl(build_ret) == EXIT_FAILURE)
     return (EXIT_FAILURE);
 
+  // print_opt();
   load_public_functions();
-  execute_tests(opt_args());
+  // execute_tests(opt_args());
+  // execute_categories();
+  execute_files();
 
   clean_opt();
   clean_rdfl();

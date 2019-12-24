@@ -1,5 +1,5 @@
-#ifndef		__OPT_H_
-# define	__OPT_H_
+#ifndef		__UNIT_OPT_H_
+# define	__UNIT_OPT_H_
 
 typedef struct	{
   int		on;
@@ -21,7 +21,7 @@ typedef struct	{
 void		print_opt(void);
 int		init_opt(int l_argc, char **l_argv);
 int		opt_isset(char opt);
-char		*opt_arg(char opt);
+const char	**opt_arg(char opt, unsigned int *);
 const char	**opt_args(void);
 void		opt_helpopt(char opt);
 void		clean_opt(void);
@@ -31,4 +31,4 @@ void		clean_opt(void);
 # define	OPT_M_BOTH	"both"
 # define	OPT_M_ADD_OPTI	"+o"
 
-#endif		/* !__OPT_H_ */
+#endif		/* !__UNIT_OPT_H_ */

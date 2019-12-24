@@ -1,8 +1,8 @@
-#ifndef		__LIB_H_
-# define	__LIB_H_
+#ifndef		__UNIT_LIB_H_
+# define	__UNIT_LIB_H_
 
 int		load_rdfl(void);
 void		*load_rdfl_function(const char *, int);
 void		clean_rdfl(void);
 
-#endif		/* !__LIB_H_ */
+#endif		/* !__UNIT_LIB_H_ */

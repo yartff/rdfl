@@ -25,4 +25,4 @@ int		test_7__buffer_access_routines(void);
 int		test_8__BNFparsing(void);
 */
 
-#endif		/* !__TESTER_H_ */
+#endif		/* !__UNIT_H_ */

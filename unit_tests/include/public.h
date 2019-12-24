@@ -1,5 +1,5 @@
-#ifndef		__PUBLIC_H_
-# define	__PUBLIC_H_
+#ifndef		__UNIT_PUBLIC_H_
+# define	__UNIT_PUBLIC_H_
 
 # include	"unit.h"
 
@@ -40,6 +40,6 @@ extern const char			*(*l__rdflDevel_handler_func_declare)(void *ptr);
 #endif
 /**/
 
-void		load_public_functions(void);
+void					load_public_functions(void);
 
-#endif		/* !__PUBLIC_H_ */
+#endif		/* !__UNIT_PUBLIC_H_ */

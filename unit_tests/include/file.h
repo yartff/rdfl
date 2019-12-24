@@ -22,3 +22,12 @@ consumers ───    identifier.c	   match_any.c    read_until.c  string.c
 // TODO: buffer.h and buffer.c
 // TODO: BACC_* in buffer.h
 #endif
+
+#ifndef		__UNIT_FILE_H_
+# define	__UNIT_FILE_H_
+
+# include	"decl.h"
+
+void		exec_file(const char *);
+
+#endif		/* !__UNIT_FILE_H_ */

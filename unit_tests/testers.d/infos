@@ -1,3 +1,6 @@
+notes:
+
+
 foreach readFunc {
   foreach optionsSet {
     rdflDevel_get_func(optionsSet) == readFunc;
