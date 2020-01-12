@@ -1,6 +1,6 @@
-#include	"public.h"
+#include	"unit_public.h"
 #include	"unit_devel.h"
-#include	"lib.h"
+#include	"unit_lib.h"
 
 readsize_handler_t		l__rdflReader_size;
 readall_handler_t		l__rdflReader_allavail;

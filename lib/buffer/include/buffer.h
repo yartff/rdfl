@@ -4,12 +4,12 @@
 # include		"rdfl_types.h"
 
 // TODO: typedef and change return type in consumers
-enum {
+typedef enum {
   BACC_CB_STOP		= 0,
   BACC_CB_CONTINUE,
   BACC_CB_NEEDDATA,
   BACC_CB_NOACTION,
-};
+}		e_next_action;
 
 // Constructor, Destructor and Cleaner
 int		b_init(t_rdfl_buffer *b, size_t amount);

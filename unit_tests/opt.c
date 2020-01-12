@@ -2,7 +2,7 @@
 #include	<unistd.h>
 #include	<stdlib.h>
 #include	<getopt.h>
-#include	"opt.h"
+#include	"unit_opt.h"
 
 static struct		{
   int		g_argc;

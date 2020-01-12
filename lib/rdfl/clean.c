@@ -8,7 +8,7 @@ _close_fd(t_rdfl *obj) {
       || RDFL_OPT_ISSET(obj->settings, LOCAL_OPEN))
     close(obj->fd);
   RDFL_OPT_UNSET(obj->settings, LOCAL_OPEN);
-  RDFL_OPT_SET(obj->settings, LOCAL_REACHED_EOF);
+  RDFL_OPT_SET(obj->settings, LOCAL_EOF);
 }
 
 void

@@ -57,14 +57,10 @@ void
 b_consume_size(t_rdfl_buffer *b, size_t value) {
   value += b->consumer.skip;
 
+  // TODO: ctx
   if (value > b->consumer.total) {
     value = b->consumer.total;
   }
-  // TODO: ctx
-#if 0
-  rdfl_context_consume(b, value);
-  rdfl_dropallcontexts(b);
-#endif
   while (value) {
     if (value >= b->consumer.l_total) {
       value -= b->consumer.l_total;

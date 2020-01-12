@@ -2,7 +2,7 @@
 #include		"rdfl_consumer.h"
 #include		"buffer.h"
 #include		"iterate.h"
-#include		"buffer_access.h"
+#include		"rdfl_access.h"
 
 #define		PTYPE(p)	((struct s_csm_readUntil *)p)
 struct		s_csm_readUntil {
@@ -22,7 +22,7 @@ _cb__csm_readUntil(void *ptr, size_t s, void *data) { // rdfl_csm_readUntil
   PTYPE(data)->obj->data.consumer.skip = PTYPE(data)->rebase_skip
     + PTYPE(data)->return_value;
   while (i < s) {
-    if (rdfl_bacc_cmp_needdata(PTYPE(data)->obj, PTYPE(data)->ptr,
+    if (rdfl_acc_cmp(PTYPE(data)->obj, PTYPE(data)->ptr,
 	  PTYPE(data)->s, RDFL_P_IGNORE_PREDATASKIP)) {
       PTYPE(data)->obj->data.consumer.skip = PTYPE(data)->rebase_skip;
       PTYPE(data)->return_value += PTYPE(data)->s;
@@ -39,7 +39,7 @@ _cb__csm_readUntil(void *ptr, size_t s, void *data) { // rdfl_csm_readUntil
 
 // TODO redo this and its callback with contexts
 ssize_t
-rdfl_csm_readUntil(t_rdfl *obj, void **extract, void *ptr, size_t s, e_bacc_options opt) {
+rdfl_csm_readUntil(t_rdfl *obj, void **extract, void *ptr, size_t s, e_acc_options opt) {
   struct s_csm_readUntil		data;
   int				ret;
 
@@ -52,7 +52,7 @@ rdfl_csm_readUntil(t_rdfl *obj, void **extract, void *ptr, size_t s, e_bacc_opti
   data.rebase_skip = obj->data.consumer.skip;
   ret = _iterate_chunk(obj, &_cb__csm_readUntil, &data, opt);
   if (ret < 0) {
-    if (ret == VCSM_REACHED_EOF)
+    if (ret == VCSM_EOF)
       return (0);
     return (ret);
   }

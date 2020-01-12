@@ -9,8 +9,8 @@ NOLN_NAME	=	librdfl.so
 SRC_MAIN	=	$(LIB_DIR)rdfl/
 SRC_BNF		=	$(LIB_DIR)bnf/
 SRC_BC		=	$(LIB_DIR)buffer/
-SRC_BC_CONS	=	$(SRC_BC)consumers/
-SRC_BC_BACC	=	$(SRC_BC)accessors/
+SRC_MAIN_CSM	=	$(SRC_MAIN)consumers/
+SRC_MAIN_ACC	=	$(SRC_MAIN)accessors/
 
 INCLUDE		=	$(LIB_DIR)include/
 INCLUDE_MAIN	=	$(SRC_MAIN)include/
@@ -29,20 +29,21 @@ SRC		=	$(SRC_MAIN)rdfl.c			\
 			$(SRC_MAIN)extract.c			\
 			$(SRC_MAIN)devel.c
 
+SRC		+=	$(SRC_MAIN_CSM)identifier.c		\
+			$(SRC_MAIN_CSM)string.c			\
+			$(SRC_MAIN_CSM)match_any.c		\
+			$(SRC_MAIN_CSM)read_until.c
+
+SRC		+=	$(SRC_MAIN_ACC)info.c			\
+			$(SRC_MAIN_ACC)compare.c		\
+			$(SRC_MAIN_ACC)get_content.c		\
+			$(SRC_MAIN_ACC)index.c
+
 SRC		+=	$(SRC_BC)buffer.c			\
 			$(SRC_BC)manage.c			\
 			$(SRC_BC)consume.c			\
 			$(SRC_BC)read.c				\
-			$(SRC_BC)access.c			\
 			$(SRC_BC)iterate.c
-
-SRC		+=	$(SRC_BC_CONS)identifier.c		\
-			$(SRC_BC_CONS)string.c			\
-			$(SRC_BC_CONS)match_any.c		\
-			$(SRC_BC_CONS)read_until.c
-
-SRC		+=	$(SRC_BC_BACC)compare.c			\
-			$(SRC_BC_BACC)get_content.c
 
 SRC		+=	$(SRC_BNF)rdfl_bnf.c			\
 			$(SRC_BNF)rdfl_bnf_params.c		\
@@ -84,7 +85,10 @@ both:			clean $(NOLN_NAME)
 
 re:			fclean all
 
-## unit_tests Makefile
+##
+## UNIT TESTS
+##
+
 UNIT_DIR	=	unit_tests/
 UNIT_TESTS_DIR	=	$(UNIT_DIR)testers.d/
 UNIT_TREE	=	$(UNIT_TESTS_DIR)tree/
@@ -96,7 +100,7 @@ UNIT_SRC	=	$(UNIT_DIR)unit.c			\
 			$(UNIT_DIR)unit_devel.c			\
 			$(UNIT_DIR)opt.c			\
 			$(UNIT_DIR)lib.c			\
-			$(UNIT_TESTS_DIR)public.c		\
+			$(UNIT_DIR)public.c			\
 			$(UNIT_TESTS_DIR)file.c#			\
 			\
 			$(UNIT_TREE)buffer/buffer.d/b_buffer_ptr_extend.c

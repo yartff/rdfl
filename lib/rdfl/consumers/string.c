@@ -55,18 +55,18 @@ inline static void _readString_init(struct s_csm_readString *d)
 { d->total = 0; d->resultdata = 0; d->return_value = 0; }
 
 ssize_t
-rdfl_csm_readString(t_rdfl *obj, void **extract, e_bacc_options bopt) {
+rdfl_csm_readString(t_rdfl *obj, void **extract, e_acc_options opt) {
   struct s_csm_readString	data;
   int				ret;
 
-  data.quote = (RDFL_OPT_ISSET(bopt, RDFL_PSTR_SIMPLE_QUOTE_STR) ? '\'' : '"');
+  data.quote = (RDFL_OPT_ISSET(opt, RDFL_PSTR_SIMPLE_QUOTE_STR) ? '\'' : '"');
   _readString_init(&data);
-  if ((ret = _iterate_chunk(obj, &_cb__csm_readString_legacy, &data, bopt)) < 0) {
-    if (ret == VCSM_REACHED_EOF)
+  if ((ret = _iterate_chunk(obj, &_cb__csm_readString_legacy, &data, opt)) < 0) {
+    if (ret == VCSM_EOF)
       return (data.return_value);
     return (VCSM_INCOMPLETE_TOKEN);
   }
-  if (_iterate_extract(obj, extract, data.return_value, bopt) == ERR_MEMORY_ALLOC)
+  if (_iterate_extract(obj, extract, data.return_value, opt) == ERR_MEMORY_ALLOC)
     return (ERR_MEMORY_ALLOC);
   return (data.return_value);
 }

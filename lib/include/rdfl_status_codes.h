@@ -41,7 +41,7 @@ typedef			enum {
   LOCAL_NONE		=	RDFL_LAST,
   LOCAL_OPEN		=	LOCAL_NONE << 1,
   LOCAL_ALLOC		=	LOCAL_NONE << 2,
-  LOCAL_REACHED_EOF	=	LOCAL_NONE << 3,
+  LOCAL_EOF		=	LOCAL_NONE << 3,
 }			e_rdflsettings_local;
 
 typedef			enum {
@@ -70,26 +70,23 @@ typedef			enum {
   VCSM			= -100,
   VCSM_INCOMPLETE_TOKEN	= -101,
   VCSM_UNMARKED_TOKEN	= -102,
-  VCSM_REACHED_EOF	= -103,
+  VCSM_EOF	= -103,
   ERRBNF_SYNTAX		= -200,
   ERRBNF_MISSINGID	= -201,
   VAL			= -400,
   VAL_POTENTIALDATA	= -401,
   VAL_TIMEOUT_REACHED	= -402,
   VAL_LAST_READ_0	= -403,
-  // If you get this value, pls fill in buffer manually and try again
   VAL_NEED_DATA		= -404
 }			e_rdflerrors;
 
-// TODO: public or private?
 typedef				enum {
   RDFL_P_NONE			= 0,
   RDFL_P_NULLTERMINATED		= 1 << 0,
-  // will assume when a token matches a rule, not any other rules can be applied
   RDFL_P_CONSUME		= 1 << 1,
   RDFL_P_SETCONTEXT		= 1 << 2,
   RDFL_P_IGNORE_PREDATASKIP	= 1 << 3,
   RDFL_P_LAST			= 1 << 4,
-}				e_bacc_options;
+}				e_acc_options;
 
 #endif			/* !__RDFL_STATUSCODES_H_ */

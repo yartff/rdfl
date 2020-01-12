@@ -39,13 +39,13 @@ _cb__csm_readIdentifier(void *ptr, size_t s, void *data) { // rdfl_csm_readIdent
 
 // TODO several types of identifier
 ssize_t
-rdfl_csm_readIdentifier(t_rdfl *obj, void **extract, e_bacc_options opt) {
+rdfl_csm_readIdentifier(t_rdfl *obj, void **extract, e_acc_options opt) {
   struct s_csm_readIdentifier	data;
   int				ret;
 
   data.return_value = 0;
   if ((ret = _iterate_chunk(obj, &_cb__csm_readIdentifier, &data, opt)) < 0
-      && ret != VCSM_REACHED_EOF)
+      && ret != VCSM_EOF)
     return (ret);
   if (_iterate_extract(obj, extract, data.return_value, opt) == ERR_MEMORY_ALLOC)
     return (ERR_MEMORY_ALLOC);

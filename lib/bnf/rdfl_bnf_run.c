@@ -1,6 +1,6 @@
 #include		<stdlib.h>
 #include		<string.h>
-#include		"buffer_access.h"
+#include		"rdfl_access.h"
 #include		"rdfl_consumer.h"
 // #include		"context.h"
 #include		"bnf.h"
@@ -14,7 +14,7 @@ static
 ssize_t
 _eval_expr_literal(char *ptr, t_rdfl *fl) {
   // fprintf(stdout, "Literal:{%s}\n", ptr);
-  return (rdfl_bacc_cmp_needdata(fl, ptr + 1, strlen(ptr) - 2, OPTS));
+  return (rdfl_acc_cmp(fl, ptr + 1, strlen(ptr) - 2, OPTS));
 }
 
 static

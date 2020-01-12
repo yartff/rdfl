@@ -2,8 +2,8 @@
 #include	<stdlib.h>
 #include	<string.h>
 #include	"unit.h"
-#include	"lib.h"
-#include	"opt.h"
+#include	"unit_lib.h"
+#include	"unit_opt.h"
 
 /*
  * 0: do not change

@@ -62,7 +62,7 @@ tl_param		*read_params(t_rdfl *, e_rdflerrors *);
 void			rdfl_readBNF_dump(t_rdfl_bnf *);
 # endif
 
-#define			READ_OPE(obj, c, opt)	(rdfl_bacc_cmp_needdata(obj, c, sizeof(c) - 1, opt) > 0)
+#define			READ_OPE(obj, c, opt)	(rdfl_acc_cmp(obj, c, sizeof(c) - 1, opt) > 0)
 #define			OP_RULE			"::="
 #define			OP_RULE_END		";"
 #define			OP_OR			"|"
@@ -70,6 +70,6 @@ void			rdfl_readBNF_dump(t_rdfl_bnf *);
 #define			OP_EXPR_END		"]"
 #define			OP_GRP_BEG		"("
 #define			OP_GRP_END		")"
-static const e_bacc_options	OPTS = RDFL_P_NULLTERMINATED | RDFL_P_CONSUME;
+static const e_acc_options	OPTS = RDFL_P_NULLTERMINATED | RDFL_P_CONSUME;
 
 #endif		/* !__RDFL_READBNF_H_ */

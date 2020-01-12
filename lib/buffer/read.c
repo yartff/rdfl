@@ -40,7 +40,7 @@ ssize_t
 push_read(t_rdfl *obj, void *ptr, size_t available) {
   ssize_t	ret;
 
-  if (RDFL_OPT_ISSET(obj->settings, LOCAL_REACHED_EOF))
+  if (RDFL_OPT_ISSET(obj->settings, LOCAL_EOF))
     return (0);
   ret = b_push_read(&obj->data, obj->fd, ptr, available);
   if (ret <= 0)

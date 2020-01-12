@@ -1,10 +1,13 @@
 #include	<stdio.h>
-#include	"file.h"
-#include	"tree.h"
+#include	"unit_file.h"
+#include	"unit_tree.h"
 
 typedef struct {
   const char *name;
+  // category
+  int		(*f)(void);
 }		t_func;
+
 typedef struct	{
   const char	*name;
   t_func	funcs[];
@@ -18,12 +21,3 @@ void
 exec_file(const char *file) {
   T_b_buffer_ptr_extend__1();
 }
-
-/*
-typedef struct	{
-  char		*path;
-  struct	{
-    t_fct	fcts[];
-  }		content;
-}		t_file;
-*/

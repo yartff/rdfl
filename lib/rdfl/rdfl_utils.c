@@ -5,7 +5,7 @@
 //
 
 inline int	rdfl_eofreached(t_rdfl *obj)
-{ return (RDFL_OPT_ISSET(obj->settings, LOCAL_REACHED_EOF)); }
+{ return (RDFL_OPT_ISSET(obj->settings, LOCAL_EOF)); }
 
 void
 rdfl_consume_size(t_rdfl *obj, size_t s) {

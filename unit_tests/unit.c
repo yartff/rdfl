@@ -2,10 +2,10 @@
 #include	<stdlib.h>
 #include	"unit.h"
 #include	"unit_devel.h"
-#include	"lib.h"
-#include	"opt.h"
-#include	"file.h"
-#include	"public.h"
+#include	"unit_lib.h"
+#include	"unit_opt.h"
+#include	"unit_file.h"
+#include	"unit_public.h"
 
 void
 execute_files(void) {

@@ -1,6 +1,6 @@
 #include		<stdlib.h>
 #include		<string.h>
-#include		"buffer_access.h"
+#include		"rdfl_access.h"
 #include		"rdfl_consumer.h"
 #include		"bnf.h"
 #include		"values.h"
@@ -115,11 +115,11 @@ tl_orexpr *
 _read_couple(t_rdfl *obj, char *beg, char *end, e_rdflerrors *e) {
   tl_orexpr	*target;
 
-  if (rdfl_bacc_cmp_needdata(obj, beg, strlen(beg), OPTS) <= 0)
+  if (rdfl_acc_cmp(obj, beg, strlen(beg), OPTS) <= 0)
     return (NULL);
   if (!(target = _read_orloop(obj, e)))
     return (NULL);
-  if (rdfl_bacc_cmp_needdata(obj, end, strlen(end), OPTS) <= 0) {
+  if (rdfl_acc_cmp(obj, end, strlen(end), OPTS) <= 0) {
     _free_rule(target);
     return (NULL);
   }

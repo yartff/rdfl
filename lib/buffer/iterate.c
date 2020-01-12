@@ -2,7 +2,7 @@
 #include		"buffer.h"
 #include		"rdfl.h"
 #include		"rdfl_consumer.h"
-#include		"buffer_access.h"
+#include		"rdfl_access.h"
 // #include		"context.h"
 
 static
@@ -29,7 +29,7 @@ _iterate_taildata_auto(t_rdfl *obj, int (*callback)(void *, size_t, void *), voi
 
   do {
     if ((newdata_size = _iterate_readdata(obj)) <= 0)
-      return (rdfl_eofreached(obj) ? VCSM_REACHED_EOF : newdata_size);
+      return (rdfl_eofreached(obj) ? VCSM_EOF : newdata_size);
   } while (callback(_b_rewind_localptr(&obj->data, newdata_size), newdata_size, data) == BACC_CB_NEEDDATA);
   return (ERR_NONE);
 }
@@ -37,7 +37,7 @@ _iterate_taildata_auto(t_rdfl *obj, int (*callback)(void *, size_t, void *), voi
 // skip will never be >total
 inline
 static
-int
+e_next_action
 _iterate_autoskip(void *chunk, size_t s,
     int (*callback)(void *, size_t, void *), void *data,
     size_t *skipped, size_t skip) {
@@ -59,7 +59,7 @@ int
 _iterate_chunk_routine(t_rdfl *obj, int (*callback)(void *, size_t, void *), void *data) {
   t_rdfl_blist	*it;
   void		*ptr;
-  int		proceed;
+  e_next_action	proceed;
   size_t	chunk_data_size, skipped = 0, total_skip;
 
   total_skip = obj->data.consumer.skip;
@@ -90,7 +90,7 @@ auto_it:
     if (RDFL_OPT_ISSET(obj->settings, RDFL_AUTOREAD)) {
       return (_iterate_taildata_auto(obj, callback, data));
     }
-    return (rdfl_eofreached(obj) ? VCSM_REACHED_EOF : VCSM_INCOMPLETE_TOKEN);
+    return (rdfl_eofreached(obj) ? VCSM_EOF : VCSM_INCOMPLETE_TOKEN);
     // TODO make sure this is handled in calling funcs
   }
   return (ERR_NONE);
@@ -104,7 +104,7 @@ auto_it:
 
 static
 ssize_t
-_handle_clear_blanks(t_rdfl *obj, e_bacc_options opt) {
+_handle_clear_blanks(t_rdfl *obj, e_acc_options opt) {
   if (!RDFL_OPT_ISSET(obj->settings, RDFL_AUTOCLEAR_BLANKS))
     return (0);
   return (rdfl_csm_readMatchAny(obj, NULL, " \t\n", opt));
@@ -112,11 +112,11 @@ _handle_clear_blanks(t_rdfl *obj, e_bacc_options opt) {
 
 static
 ssize_t
-_handle_comment_loop(t_rdfl *obj, e_bacc_options opt, t_comments *l) {
+_handle_comment_loop(t_rdfl *obj, e_acc_options opt, t_comments *l) {
   ssize_t	ret;
   size_t	len = strlen(l->beg);
 
-  if ((ret = rdfl_bacc_cmp_needdata(obj, l->beg, len, opt)) <= 0)
+  if ((ret = rdfl_acc_cmp(obj, l->beg, len, opt)) <= 0)
     return (ret);
   obj->data.consumer.skip += len;
   ret = rdfl_csm_readUntil(obj, NULL, l->end, strlen(l->end), opt | RDFL_P_IGNORE_PREDATASKIP);
@@ -130,7 +130,7 @@ _handle_comment_loop(t_rdfl *obj, e_bacc_options opt, t_comments *l) {
 
 static
 ssize_t
-_handle_comment(t_rdfl *obj, e_bacc_options opt) {
+_handle_comment(t_rdfl *obj, e_acc_options opt) {
   t_comments	*l = obj->v.cmts;
   ssize_t	ret;
 
@@ -144,11 +144,11 @@ _handle_comment(t_rdfl *obj, e_bacc_options opt) {
 
 static
 ssize_t
-_handle_clearable_data(t_rdfl *obj, e_bacc_options opt) {
+_handle_clearable_data(t_rdfl *obj, e_acc_options opt) {
   ssize_t		total = 0, ret;
   int			loop_ret = 1;
   size_t		i;
-  ssize_t		(*ft[])(t_rdfl *, e_bacc_options) = {
+  ssize_t		(*ft[])(t_rdfl *, e_acc_options) = {
     &_handle_clear_blanks,
     &_handle_comment
   };
@@ -177,12 +177,12 @@ _handle_clearable_data(t_rdfl *obj, e_bacc_options opt) {
 // TODO: also expose method to handlepredata except last line (for '^')
 static
 ssize_t
-_handle_predata(t_rdfl *obj, e_bacc_options opt) {
+_handle_predata(t_rdfl *obj, e_acc_options opt) {
   return (_handle_clearable_data(obj, opt));
 }
 
 int
-_iterate_chunk(t_rdfl *obj, int (*callback)(void *, size_t, void *), void *data, e_bacc_options opt) {
+_iterate_chunk(t_rdfl *obj, int (*callback)(void *, size_t, void *), void *data, e_acc_options opt) {
   int		ret;
   ssize_t	save; // skip is incremented by save when predata handled
 
@@ -210,7 +210,7 @@ _iterate_chunk(t_rdfl *obj, int (*callback)(void *, size_t, void *), void *data,
 
   if (((ret = _iterate_chunk_routine(obj, callback, data)) == VCSM_INCOMPLETE_TOKEN)
       && rdfl_eofreached(obj))
-    return (VCSM_REACHED_EOF);
+    return (VCSM_EOF);
   return (ret);
 }
 
@@ -218,12 +218,12 @@ _iterate_chunk(t_rdfl *obj, int (*callback)(void *, size_t, void *), void *data,
 // you can do things in between
 // if you send NULL as extract, it can't fail
 int
-_iterate_extract(t_rdfl *obj, void **extract, ssize_t s, e_bacc_options opt) {
+_iterate_extract(t_rdfl *obj, void **extract, ssize_t s, e_acc_options opt) {
   if (s <= 0) {
     if (extract) *extract = NULL;
     return (ERR_NONE);
   }
-  if ((extract != NULL) && (!(*extract = rdfl_bacc_getcontent(obj, NULL, s, opt | RDFL_P_IGNORE_PREDATASKIP))))
+  if ((extract != NULL) && (!(*extract = rdfl_acc_getcontent(obj, NULL, s, opt | RDFL_P_IGNORE_PREDATASKIP))))
     return (ERR_MEMORY_ALLOC);
   if (RDFL_OPT_ISSET(opt, RDFL_P_CONSUME))
     b_consume_size(&obj->data, s);

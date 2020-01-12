@@ -34,17 +34,17 @@ _cb__csm_readMatchAny(void *ptr, size_t s, void *data) { // rdfl_csm_readMatchAn
 #undef		PTYPE
 
 ssize_t
-rdfl_csm_readMatchAny(t_rdfl *obj, void **extract, const char *content, e_bacc_options bopt) {
+rdfl_csm_readMatchAny(t_rdfl *obj, void **extract, const char *content, e_acc_options opt) {
   struct s_csm_readMatchAny	data;
   int		ret;
 
   data.return_value = 0;
   data.content = (void *)content;
   data.ctsize = strlen(content);
-  if ((ret = _iterate_chunk(obj, &_cb__csm_readMatchAny, &data, bopt)) < 0
-      && ret != VCSM_REACHED_EOF)
+  if ((ret = _iterate_chunk(obj, &_cb__csm_readMatchAny, &data, opt)) < 0
+      && ret != VCSM_EOF)
     return (ret);
-  if (_iterate_extract(obj, extract, data.return_value, bopt) == ERR_MEMORY_ALLOC)
+  if (_iterate_extract(obj, extract, data.return_value, opt) == ERR_MEMORY_ALLOC)
     return (ERR_MEMORY_ALLOC);
   return (data.return_value);
 }

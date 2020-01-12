@@ -2,7 +2,7 @@
 #include	<stdio.h>
 #include	<dlfcn.h>
 #include	"unit.h"
-#include	"lib.h"
+#include	"unit_lib.h"
 
 static void	*handle = NULL;
 
