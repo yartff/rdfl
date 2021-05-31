@@ -1,6 +1,6 @@
 #include	"rdfl_devel.h"
 
-#ifdef		DEVEL
+// #ifdef		DEVEL
 
 # define	RDFL_IS_ASCII_PRINTABLECHAR(c) ((c) >= ' ' && (c) <= '~')
 # define	RDFL_IS_ASCII_NODISPLAYCHAR(c) (((c) == '\n') || ((c) == '\t'))
@@ -170,7 +170,7 @@ rdflDevel_printbufferstate(t_rdfl *obj) {
   // print_contexts(obj->data.consumer.ctx);
 }
 
-#endif
+// #endif
 
 e_buildMode
 rdflBuild_getMode(void) {

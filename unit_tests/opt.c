@@ -4,17 +4,16 @@
 #include	<getopt.h>
 #include	"unit_opt.h"
 
-static struct		{
-  int		g_argc;
-  char		**g_argv;
-  int		result;
-}		g_opt = {
+t_opt_data		g_opt = {
   0, NULL, EXIT_SUCCESS
 };
 
 t_opt		opts[] = {
   {'h', NULL, "Prints this usage", 0, DEF_RT_VAL},
   {'c', "category", "Tests category.", 1, DEF_RT_VAL},
+  {'f', "file", "Tests files.", 1, DEF_RT_VAL},
+  {'p', "public", "Tests public functions.", 1, DEF_RT_VAL},
+  {'L', NULL, "Lists tests without executing.", 1, DEF_RT_VAL},
   {'l', NULL, "Lists files.", 1, DEF_RT_VAL},
   {'a', NULL, "Tests all files.", 0, DEF_RT_VAL},
   // {'e', NULL, "Only output errors.", 0, DEF_RT_VAL},
@@ -174,7 +173,7 @@ print_opt_f(t_opt *ctn, void *data) {
 }
 
 void
-print_opt(void) {
+opt_print(void) {
   foreach_opt(print_opt_f, NULL);
   /*
   fprintf(stdout, "===\n");
@@ -237,7 +236,7 @@ help(void) {
   foreach_opt(help_f, NULL);
 }
 
-int
+e_unit_return_code
 init_opt(int l_argc, char **l_argv) {
   int		i;
   const char	*optstring = help_optstring();
@@ -248,12 +247,12 @@ init_opt(int l_argc, char **l_argv) {
   g_opt.g_argv = l_argv;
   while ((i = getopt(l_argc, l_argv, optstring)) != -1) {
     if (i == '?')
-      return (EXIT_FAILURE);
+      return (FAILURE);
     unit_setopt(i);
   }
   if (opt_isset('h')) {
     help();
-    exit(EXIT_SUCCESS);
+    exit(SUCCESS);
   }
-  return (EXIT_SUCCESS);
+  return (SUCCESS);
 }

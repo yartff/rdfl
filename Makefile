@@ -71,8 +71,8 @@ ifeq ($(O),1)
   CFLAGS += -O3 -DOPTI
 endif
 
-clean:
-	$(CMD_RM) $(OBJ)
+lclean:			clean
+	$(CMD_RM) $(NAME) $(NOLN_NAME)
 
 devel:			CFLAGS += -DDEVEL
 devel:			clean $(NOLN_NAME)
@@ -83,40 +83,53 @@ debug:			clean $(NOLN_NAME)
 both:			CFLAGS += -DDEVEL -g3 -DDEBUG
 both:			clean $(NOLN_NAME)
 
-re:			fclean all
+re:			lclean all
 
 ##
 ## UNIT TESTS
 ##
 
-UNIT_DIR	=	unit_tests/
-UNIT_TESTS_DIR	=	$(UNIT_DIR)testers.d/
-UNIT_TREE	=	$(UNIT_TESTS_DIR)tree/
-UNIT_NAME	=	unit
+UNIT_DIR		=	unit_tests/
+UNIT_LOG_DIR		=	$(UNIT_DIR)log/
+UNIT_PUBLIC_DIR		=	$(UNIT_DIR)public/
+UNIT_CATEGORIES_DIR	=	$(UNIT_DIR)categories/
+UNIT_FILES_DIR		=	$(UNIT_DIR)file/
+UNIT_MOCK_DIR		=	$(UNIT_DIR)mock/
+UNIT_TREE		=	$(UNIT_FILES_DIR)tree/
+UNIT_NAME		=	unit
 
-UNIT_OBJ	=	$(UNIT_SRC:.c=.o)
+UNIT_OBJ		=	$(UNIT_SRC:.c=.o)
 
-UNIT_SRC	=	$(UNIT_DIR)unit.c			\
-			$(UNIT_DIR)unit_devel.c			\
+UNIT_SRC		=	$(UNIT_DIR)unit.c		\
+			$(UNIT_DIR)lib_builder.c		\
 			$(UNIT_DIR)opt.c			\
 			$(UNIT_DIR)lib.c			\
-			$(UNIT_DIR)public.c			\
-			$(UNIT_TESTS_DIR)file.c#			\
+			\
+			$(UNIT_LOG_DIR)log.c		\
+			\
+			$(UNIT_PUBLIC_DIR)public.c		\
+			\
+			$(UNIT_CATEGORIES_DIR)categories.c	\
+			\
+			$(UNIT_FILES_DIR)file.c			\
+			\
+			$(UNIT_MOCK_DIR)mock.c			\
+			$(UNIT_MOCK_DIR)definition.c#		\
 			\
 			$(UNIT_TREE)buffer/buffer.d/b_buffer_ptr_extend.c
 
-INCLUDES_UFLAGS	=	-I$(UNIT_DIR)include/ -I$(UNIT_TREE) -I$(LIB_DIR)
+INCLUDES_UFLAGS	=	-I$(UNIT_DIR)include/ -I$(LIB_DIR)
 
 UNIT_LD_FLAGS	=	-ldl
+#RDFL_LD_FLAGS	=	-L. -lrdfl
 
 $(UNIT_NAME):		CFLAGS	=	-g3
-$(UNIT_NAME):		CFLAGS	=	-DDEVEL
 $(UNIT_NAME):		CFLAGS	+=	$(INCLUDES_FLAGS)
 $(UNIT_NAME):		CFLAGS	+=	$(INCLUDES_UFLAGS)
 $(UNIT_NAME):		CFLAGS	+=	-D_GNU_SOURCE
 $(UNIT_NAME):		$(UNIT_OBJ)
 	echo Linking: $(CMD_CC) '{}' -o $(UNIT_NAME) $(UNIT_LD_FLAGS)
-	$(CMD_CC) $(UNIT_OBJ) -o $(UNIT_NAME) $(UNIT_LD_FLAGS)
+	$(CMD_CC) $(UNIT_OBJ) -o $(UNIT_NAME) $(UNIT_LD_FLAGS) $(RDFL_LD_FLAGS)
 
 uclean:
 	$(CMD_RM) $(UNIT_NAME) $(UNIT_OBJ)
@@ -128,8 +141,10 @@ uclean:
 details:
 	@echo "Command line: "\`"$(CMD_CC) -c $(CFLAGS) {.c} -o {.o}"\`"."
 
-fclean:			uclean clean
-	$(CMD_RM) $(NAME) $(NOLN_NAME)
+clean:
+	$(CMD_RM) $(OBJ) $(UNIT_OBJ)
+
+fclean:			uclean lclean
 
 CMD_CC		=	gcc
 CMD_RM		=	@rm -rfv

@@ -2,7 +2,6 @@
 // Return Values
 // DEVEL
 
-
 typedef struct	{
   int		type; // file or pub
   const char	*name;

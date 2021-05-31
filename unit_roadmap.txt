@@ -1,0 +1,8 @@
+-p <public_function>
+size | allavail | noextend | legacy | monitoring | monitoring_noextend | monitoring_allavail | singlestep
+
+-f <file>
+inner functions
+
+-c <category>
+test category

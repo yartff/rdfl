@@ -1,6 +1,8 @@
 #ifndef		__RDFL_TYPES_BUFFER_H_
 # define	__RDFL_TYPES_BUFFER_H_
 
+# include	<sys/types.h>
+
 typedef struct		s_rdfl_blist {
   void			*data;
   size_t		size;

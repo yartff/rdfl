@@ -78,8 +78,31 @@ ssize_t			rdfl_csm_readMatchAny(opt);
 #ifndef		__UNIT_FILE_H_
 # define	__UNIT_FILE_H_
 
-# include	"decl.h"
+// TODO add count for occurences in cli options
+typedef struct		{
+  const char		*name;
+  // int (*)();
+}			t_unit_treefunc;
 
-void		exec_file(const char *);
+typedef struct		{
+  const char		*name;
+  t_unit_treefunc	*functions;
+}			t_unit_treefile;
+
+typedef struct		s_treedir {
+  const char		*name;
+  t_unit_treefile	*files;
+  struct s_treedir	*dirs;
+}			t_unit_treedir;
+
+#define		TREE_DIR(x)		tree_d_##x
+#define		TREE_FILE(x)		tree_f_##x
+#define		TREE_FUNC(x)		tree_c_##x
+
+#define		TREEDEF_DIR(x)		t_unit_treedir	TREE_DIR(x)
+#define		TREEDEF_FILE(x)		t_unit_treefile	TREE_FILE(x)
+#define		TREEDEF_FUNC(x)		t_unit_treefunc	TREE_FUNC(x)
+
+void		execute_files(void);
 
 #endif		/* !__UNIT_FILE_H_ */

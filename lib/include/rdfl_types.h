@@ -2,7 +2,6 @@
 # define	__RDFL_TYPES_H_
 
 # include	<sys/select.h>
-# include	<sys/types.h>
 # include	"rdfl_types_buffer.h"
 # include	"rdfl_status_codes.h"
 
