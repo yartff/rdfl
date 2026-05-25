@@ -33,4 +33,5 @@ unit
 # Debug files
 *.dSYM/
 
+.cache/
 notes.txt

@@ -117,7 +117,7 @@ uclean:
 	$(CMD_RM) $(UNIT_NAME) $(UNIT_OBJ)
 
 %.o:			%.c
-	@echo -e [...] - $*.c
+	@echo [...] - $*.c
 	@$(CMD_CC) -c $(CFLAGS) $*.c -o $*.o
 
 details:
@@ -129,4 +129,7 @@ fclean:			uclean clean
 CMD_CC		=	gcc
 CMD_RM		=	@rm -rfv
 
-.PHONY:	all clean fclean re details
+compile_commands.json:
+	bear -- $(MAKE) -B
+
+.PHONY:	all clean fclean re details compile_commands.json
